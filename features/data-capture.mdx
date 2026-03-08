@@ -1,0 +1,567 @@
+---
+title: 'Data Capture'
+description: 'Learn about the six data capture sections required for employee background evaluations in vLife DGO'
+---
+
+## Overview
+
+vLife DGO requires employees to complete **six comprehensive data sections** as part of their background evaluation. Progress is tracked across all sections, with the ability to update or delete section data as needed.
+
+## Six Data Sections
+
+<CardGroup cols={3}>
+  <Card title="Personal" icon="user">
+    Basic personal information, contact details, and address
+  </Card>
+  <Card title="Family" icon="users">
+    Family members, relationships, and dependents
+  </Card>
+  <Card title="Academic" icon="graduation-cap">
+    Educational background and training certificates
+  </Card>
+  <Card title="Career" icon="briefcase">
+    Employment history and professional trajectory
+  </Card>
+  <Card title="Economic" icon="dollar-sign">
+    Financial information, assets, and liabilities
+  </Card>
+  <Card title="References" icon="address-book">
+    Personal and professional references
+  </Card>
+</CardGroup>
+
+## Progress Tracking
+
+### Completion Calculation
+
+The system tracks completion of all six sections:
+
+```javascript
+const Personales = datosPersonales.length;
+const Familiares = datosFamiliares.length;
+const Academicos = datosAcademicos.length;
+const Laborales = trayectoria.length;
+const Economicos = datosEconomicos.length;
+const Referencias = datosReferencias.length;
+
+const TotalCaptura = Personales + Familiares + Academicos + 
+                     Laborales + Economicos + Referencias;
+
+const ProcessCapture = TotalCaptura * 100 / 6;
+const ProcessCaptureFormat = ProcessCapture.toFixed(2);
+```
+
+<Info>
+  Progress is calculated as a percentage, with each completed section contributing 16.67% to the total.
+</Info>
+
+## Section 1: Personal Data
+
+### Overview
+
+Captures comprehensive personal information, contact details, and residential data.
+
+### Data Fields
+
+**Basic Information:**
+- Full name (`personalesNombre`)
+- Date of birth (`personalesFechaNac`)
+- Place of birth (`personalesLugarNac`)
+- Nationality (`personalesNacionalidad`)
+- Gender (`personalesSexo`)
+- Marital status (`personalesEdoCivil`)
+- Age (`personalesEdad`)
+- Education level (`personalesEscolaridad`)
+
+**Identification:**
+- RFC (`personalesRFC`)
+- CURP (`personalesCURP`)
+
+**Contact Information:**
+- Home phone (`personalesTelFijo`)
+- Cell phone (`personalesTelCelular`)
+- Office phone (`personalesTelOficina`)
+- Extension (`personalesExt`)
+- Emergency contact phone (`personalesTelRecados`)
+- Emergency contact person (`personalesPersonaRecados`)
+- Email (`personalesEmail`)
+
+**Address Information:**
+- Street and number (`personalesCalleNum`)
+- Colony/neighborhood (`personalesColonia`)
+- Postal code (`personalesCP`)
+- City/locality (`personalesLocalidad`)
+- State (`personalesEstado`)
+- Years at residence (`personalesAnioDom`)
+- Number of residents (`personalesPersonasHab`)
+- Cross streets (`personalesEntreCalles`)
+- Property façade description (`personalesFachada`)
+- Google Maps link (`personalesGoogle`)
+- Additional observations (`personalesObservaciones`)
+
+### Implementation
+
+```javascript
+const savePersonalesPermanencia = async (req, res) => {
+  const {
+    evalID,
+    personalesNombre,
+    personalesFechaNac,
+    personalesLugarNac,
+    // ... all personal fields
+  } = req.body;
+  
+  const dataPacket = {
+    evalID,
+    personalesNombre,
+    personalesFechaNac,
+    // ... all fields
+  };
+  
+  try {
+    await PoolvLife.query(
+      CaptureDataModel.saveDatosPersonalesPerma,
+      dataPacket
+    );
+    req.flash("success", "Datos personales guardados, captura redes sociales");
+    res.redirect("back");
+  } catch (e) {
+    console.log(e);
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+### Social Media Accounts
+
+After saving personal data, employees can add social media accounts:
+
+```javascript
+const SaveRedSocial = async (req, res) => {
+  const { evalID, redesTipoRed, redesUsuario } = req.body;
+  const dataPacket = {
+    evalID,
+    redesTipoRed,
+    redesUsuario
+  };
+  try {
+    await PoolvLife.query(CaptureDataModel.SaveRedSocial, dataPacket);
+    req.flash("success", "Red social guardada");
+    res.redirect("back");
+  } catch (e) {
+    console.log(e);
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+<Note>
+  Multiple social media accounts can be added. Each is stored separately and can be deleted individually.
+</Note>
+
+## Section 2: Family Data
+
+### Overview
+
+Captures information about family members and dependents.
+
+### Data Fields
+
+For each family member:
+- First name (`familiarNombres`)
+- Last name (`familiarApellidos`)
+- Relationship (`familiarParentesco`)
+- Occupation (`familiarOcupacion`)
+- Age (`familiarEdad`)
+- Living status (`familiarVive`)
+- Phone number (`familiarTelefono`)
+- Dependent status (`familiarDependiente`)
+
+### Implementation
+
+```javascript
+const saveFamiliares = async (req, res) => {
+  const {
+    evalID,
+    familiarNombres,
+    familiarApellidos,
+    familiarParentesco,
+    familiarOcupacion,
+    familiarEdad,
+    familiarVive,
+    familiarTelefono,
+    familiarDependiente,
+  } = req.body;
+  
+  // Concatenate full name
+  const familiarNombre = `${familiarApellidos} ${familiarNombres}`;
+
+  const dataPacket = {
+    evalID,
+    familiarNombre,
+    familiarParentesco,
+    familiarOcupacion,
+    familiarEdad,
+    familiarVive,
+    familiarTelefono,
+    familiarDependiente,
+  };
+  
+  try {
+    await PoolvLife.query(CaptureFamiliaresModel.saveFamiliar, dataPacket);
+    req.flash("success", "Se guardo familiar !");
+    res.redirect("back");
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+<Info>
+  Multiple family members can be added. Each entry can be edited or deleted independently.
+</Info>
+
+## Section 3: Academic Data
+
+### Overview
+
+Captures educational background and professional training.
+
+### Components
+
+1. **Highest Academic Degree** (single record)
+2. **Training Certificates** (multiple records)
+
+### Academic Degree Fields
+
+- Degree level (`academicoUltimoGrado`)
+- Start period (`academicoPeriodoInicio`)
+- End period (`academicoPeriodoFinal`)
+- Institution (`academicoInstitucion`)
+- Document type (`academicoDocumento`)
+- Location (`academicoUbicacion`)
+
+### Training Certificate Fields
+
+- Training details (`capacitacionDetalle`)
+- Start date (`capacitacionInicio`)
+- End date (`capacitacionFinal`)
+- Institution (`capacitacionInstitucion`)
+- Document type (`capacitacionDocumento`)
+
+### Implementation
+
+```javascript
+const SaveAcademicosPermanencia = async (req, res) => {
+  const {
+    evalID,
+    academicoUltimoGrado,
+    academicoPeriodoInicio,
+    academicoPeriodoFinal,
+    academicoInstitucion,
+    academicoDocumento,
+    academicoUbicacion,
+  } = req.body;
+  
+  const dataPacket = {
+    evalID,
+    academicoUltimoGrado,
+    academicoPeriodoInicio,
+    academicoPeriodoFinal,
+    academicoInstitucion,
+    academicoDocumento,
+    academicoUbicacion,
+  };
+  
+  try {
+    await PoolvLife.query(
+      CaptureAcademicosModel.SaveGradoAcademico,
+      dataPacket
+    );
+    req.flash("success", "Último grado académico guardado");
+    res.redirect(`back`);
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+## Section 4: Career Trajectory
+
+Career data varies by evaluation type:
+
+- **Permanencia**: Current position and career history within the organization
+- **Nuevo Ingreso**: Previous employment history outside the organization
+
+<Tabs>
+  <Tab title="Permanencia">
+    For existing employees:
+    - Current assignments
+    - Departmental transfers
+    - Position history
+    - Family in law enforcement
+    - Corporate family connections
+  </Tab>
+  <Tab title="Nuevo Ingreso">
+    For new employees:
+    - Previous employers
+    - Job positions held
+    - Employment periods
+    - Reasons for leaving
+    - Reference contacts
+  </Tab>
+</Tabs>
+
+## Section 5: Economic Data
+
+### Overview
+
+Comprehensive financial information including income, expenses, assets, and liabilities.
+
+### Income Information
+
+- Monthly income (`economicosMensual`)
+- Additional income (`economicosAdicional`)
+- Income source description (`economicosConsiste`)
+- Total income (`economicosTotalIngreso`)
+
+### Expenses
+
+- Food (`economicosAlimentos`)
+- Transportation (`economicosTransporte`)
+- Utilities (`economicosServicios`)
+- Communications (`economicosComunicaciones`)
+- Credit cards (`economicosTarjetas`)
+- Loans (`economicosCreditos`)
+- Clothing (`economicosVestido`)
+- Medical (`economicosMedico`)
+- Savings groups (`economicosTandas`)
+- Savings (`economicosAhorros`)
+- School expenses (`economicosEscolares`)
+- Rent (`economicosRenta`)
+- Alimony (`economicosPension`)
+- Other expenses (`economicosFaltante`)
+- Total expenses (`economicosTotalEgresos`)
+
+### Financial Details
+
+- Property type (`economicosTipo`)
+- Tax regime (`economicosRegimen`)
+- Financial issues (`economicosProblematica`)
+
+### Sub-tables
+
+Economic data includes multiple related tables:
+
+1. **Bank Accounts** - Type, institution, opening date, amounts
+2. **Credits/Loans** - Type, institution, debt, monthly payment
+3. **Real Estate** - Type, date, purchase method, value
+4. **Personal Property** - Vehicles and other valuable items
+5. **Extra Income** - Additional income sources
+
+### Implementation
+
+```javascript
+const SaveEconomicos = async (req, res) => {
+  try {
+    const {
+      evalID,
+      economicosMensual,
+      economicosAdicional,
+      economicosConsiste,
+      economicosTotalIngreso,
+      economicosAlimentos,
+      economicosTransporte,
+      // ... all expense fields
+      economicosTotalEgresos,
+      economicosTipo,
+      economicosRegimen,
+      economicosProblematica,
+    } = req.body;
+    
+    const dataPacket = {
+      evalID,
+      economicosMensual,
+      economicosAdicional,
+      // ... all fields
+    };
+    
+    await PoolvLife.query(CaptureEconomicosModel.SaveEconomicos, [dataPacket]);
+    req.flash("success", "Se guardaron economicos correctamente !");
+    res.redirect("back");
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+<Warning>
+  Economic data is the most complex section, with five related sub-tables. Deleting economic data removes all related entries.
+</Warning>
+
+## Section 6: References
+
+### Overview
+
+Captures both personal and professional references.
+
+### Reference Types
+
+1. **Professional References** (3 required)
+   - Name (`referenciasNombre1-3`)
+   - Position (`referenciasPuesto1-3`)
+   - Company (`referenciasEmpresa1-3`)
+   - Phone (`referenciasTelefono1-3`)
+
+2. **Personal References** (3 required)
+   - Name (`referenciasNombreP1-3`)
+   - Home phone (`referenciasFijoP1-3`)
+   - Cell phone (`referenciasCelularP1-3`)
+
+### Implementation
+
+```javascript
+const SaveReferencias = async (req, res) => {
+  const {
+    evalID,
+    referenciasNombre1,
+    referenciasPuesto1,
+    referenciasEmpresa1,
+    referenciasTelefono1,
+    referenciasNombre2,
+    referenciasPuesto2,
+    referenciasEmpresa2,
+    referenciasTelefono2,
+    referenciasNombre3,
+    referenciasPuesto3,
+    referenciasEmpresa3,
+    referenciasTelefono3,
+    referenciasNombreP1,
+    referenciasFijoP1,
+    referenciasCelularP1,
+    referenciasNombreP2,
+    referenciasFijoP2,
+    referenciasCelularP2,
+    referenciasNombreP3,
+    referenciasFijoP3,
+    referenciasCelularP3,
+    encryptedData,
+  } = req.body;
+  
+  const daPacket = {
+    evalID,
+    referenciasNombre1,
+    referenciasPuesto1,
+    // ... all reference fields
+  };
+  
+  try {
+    await PoolvLife.query(CaptureReferenciasModel.SaveReferencias, [daPacket]);
+    req.flash("success", "Referencias guardadas con exito !");
+    res.redirect(`/evaluacionvLife/evaluacionView/${encryptedData}`);
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+<Note>
+  All six references (3 professional + 3 personal) are saved as a single record. The entire set can be updated or deleted together.
+</Note>
+
+## Data Validation and Storage
+
+### Validation
+
+The system performs validation at multiple levels:
+
+1. **Frontend validation** - Form field requirements
+2. **Backend validation** - Data type and format checks
+3. **Database constraints** - Foreign key relationships
+
+### Encrypted Data Handling
+
+All data capture forms receive encrypted evaluation IDs:
+
+```javascript
+const generalesCapturePermanencia = async (req, res) => {
+  const { encryptedData } = req.params;
+  
+  try {
+    const ncryptObjet = new ncrypt(keyDecrypt.key);
+    const decryptedData = ncryptObjet.decrypt(encryptedData);
+    
+    // Fetch existing data
+    const [getDatosPersonalesPerma] = await PoolvLife.query(
+      CaptureDataModel.getDatosPersonalesPerma,
+      decryptedData
+    );
+    
+    res.render("captureData/personalesCapturePermanencia", {
+      user: req.session.name,
+      decryptedData,
+      encryptedData,
+      dataPerma: getDatosPersonalesPerma[0],
+    });
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+## Deleting Section Data
+
+Employees can delete and re-enter any section:
+
+```javascript
+const DeletePersonales = async (req, res) => {
+  const { evalID } = req.body;
+  try {
+    await PoolvLife.query(EvaluationvLifeModel.DeletePersonales, evalID);
+    req.flash("success", "Datos personales eliminados");
+    res.redirect("back");
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+### Cascade Deletion
+
+Some sections delete related data:
+
+- **Academics**: Deletes academic degree AND all training certificates
+- **Career**: Deletes trajectory AND family in process, corporate family, and employment history
+- **Economic**: Deletes economic data AND all bank accounts, credits, properties, and vehicles
+
+<Warning>
+  Deleting a section removes all related sub-table entries. This action cannot be undone.
+</Warning>
+
+## Related Controllers
+
+- **CapturePersonalesController.js** (`src/controllers/CapturePersonalesController.js:1`) - Personal data
+- **CaptureFamiliaresController.js** (`src/controllers/CaptureFamiliaresController.js:1`) - Family data
+- **CaptureAcademicosController.js** (`src/controllers/CaptureAcademicosController.js:1`) - Academic data
+- **CaptureTrayectoriaController.js** - Career trajectory
+- **CaptureEconomicosController.js** (`src/controllers/CaptureEconomicosController.js:1`) - Economic data
+- **CaptureReferenciasController.js** (`src/controllers/CaptureReferenciasController.js:1`) - References
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Document Upload" icon="upload" href="/features/document-upload">
+    Upload required documents for your evaluation
+  </Card>
+  <Card title="Expediente Generation" icon="file-pdf" href="/features/expediente-generation">
+    Generate your complete evaluation PDF
+  </Card>
+</CardGroup>

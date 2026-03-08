@@ -1,0 +1,113 @@
+---
+title: Introduction
+description: Welcome to vLife DGO - Employee background evaluation and verification system for CEACC Durango
+---
+
+# Welcome to vLife DGO
+
+vLife DGO is a comprehensive web-based platform designed for the Centro Estatal de Evaluación y Control de Confianza (CEACC) in Durango, Mexico. The system streamlines the employee background evaluation and verification process for law enforcement and public security personnel.
+
+## What is vLife DGO?
+
+vLife DGO provides a complete digital solution for conducting thorough background evaluations, including:
+
+- **Personal Information Management** - Capture and maintain comprehensive personal data
+- **Multi-dimensional Evaluation** - Assess candidates across family, academic, career, and economic dimensions
+- **Document Management** - Upload, validate, and store required documentation securely
+- **Automated Report Generation** - Generate professional expedientes (dossiers) in PDF format
+- **Certificate Issuance** - Create and validate official certificates for completed evaluations
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Two Evaluation Types" icon="clipboard-check" href="/features/evaluation-types">
+    Support for both Permanencia (continuity) and Nuevo Ingreso (new entry) evaluations
+  </Card>
+  <Card title="Secure Authentication" icon="shield-halved" href="/features/authentication">
+    Session-based authentication with encrypted passwords and secure session management
+  </Card>
+  <Card title="Multi-step Data Capture" icon="list-check" href="/features/data-capture">
+    Structured forms for personal, family, academic, career, economic, and reference data
+  </Card>
+  <Card title="Document Upload" icon="file-arrow-up" href="/features/document-upload">
+    Support for required and optional documents with validation and file size limits
+  </Card>
+  <Card title="PDF Generation" icon="file-pdf" href="/features/expediente-generation">
+    Automated expediente generation using Puppeteer for professional reports
+  </Card>
+  <Card title="Progress Tracking" icon="chart-line" href="/guides/creating-evaluation">
+    Real-time progress indicators showing evaluation completion status
+  </Card>
+</CardGroup>
+
+## Who is it for?
+
+vLife DGO is designed for:
+
+- **Candidates** - Law enforcement and public security personnel undergoing background evaluations
+- **Evaluators** - CEACC staff managing and reviewing evaluation submissions
+- **System Administrators** - IT personnel responsible for deployment and configuration
+
+## How it Works
+
+<Steps>
+  <Step title="User Registration">
+    Candidates register with their personal information, RFC (tax ID), and evaluation type
+  </Step>
+  <Step title="Create Evaluation">
+    System creates an encrypted evaluation record for the current year
+  </Step>
+  <Step title="Complete Data Capture">
+    Candidates fill out six data capture sections: personal, family, academic, career, economic, and references
+  </Step>
+  <Step title="Upload Documents">
+    Required documents are uploaded based on evaluation type (Permanencia or Nuevo Ingreso)
+  </Step>
+  <Step title="Finalize Evaluation">
+    Once all sections are complete and documents uploaded, evaluation is submitted for review
+  </Step>
+  <Step title="Generate Reports">
+    System generates comprehensive expediente PDF and certificate upon approval
+  </Step>
+</Steps>
+
+## Technology Stack
+
+vLife DGO is built with:
+
+- **Backend** - Node.js with Express.js framework
+- **Templating** - Handlebars for server-side rendering
+- **Database** - MySQL for data persistence
+- **Authentication** - bcrypt for password hashing, express-session for session management
+- **PDF Generation** - Puppeteer for creating expediente reports
+- **File Upload** - Multer with configurable size limits (20MB max)
+
+## Getting Started
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running with vLife DGO in minutes
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Step-by-step installation guide for development and production
+  </Card>
+  <Card title="Configuration" icon="gear" href="/configuration/environment">
+    Configure database, sessions, and file uploads
+  </Card>
+  <Card title="User Guides" icon="book-open" href="/guides/user-registration">
+    Learn how to use each feature of the platform
+  </Card>
+</CardGroup>
+
+## Support
+
+For questions or issues with vLife DGO, please refer to:
+
+- [GitHub Repository](https://github.com/hpunk123/dgoWeb) - Source code and issue tracking
+- User manual included in `/src/public/resources/Manual/Manual_de_Usuario_vLife.pdf`
+
+---
+
+<Note>
+vLife DGO is version 3.0.0 and is actively used by CEACC Durango for employee background evaluations.
+</Note>

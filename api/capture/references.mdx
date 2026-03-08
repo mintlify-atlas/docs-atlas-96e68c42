@@ -1,0 +1,330 @@
+---
+title: References Data Capture
+description: API endpoints for capturing personal and work references for background evaluations
+---
+
+## Overview
+
+The References Data Capture API manages both work-related (laborales) and personal references for candidates. The system requires:
+
+- **3 Work References** (laborales): From previous employers or supervisors
+- **3 Personal References** (personales): From non-family members who know the candidate
+
+The system handles different reference requirements for **Permanencia** (current employees) vs **Nuevo Ingreso** (new hires).
+
+## Authentication
+
+All endpoints require authentication via the `isLoggedIn` middleware. Users must have an active session to access these endpoints.
+
+## Get References Data
+
+<api method="GET" path="/ReferenciasCapture/:encryptedData" />
+
+Retrieves existing reference information for a specific evaluation.
+
+### Path Parameters
+
+<ParamField path="encryptedData" type="string" required>
+  Encrypted evaluation ID
+</ParamField>
+
+### Response
+
+For **Permanencia** (current employees):
+
+<ResponseField name="referenciasLaborales" type="object">
+  Complete set of work and personal references
+</ResponseField>
+
+<ResponseField name="permanencia" type="string">
+  Flag indicating permanencia evaluation type
+</ResponseField>
+
+For **Nuevo Ingreso** (new hires):
+
+<ResponseField name="referenciasLaborales" type="object">
+  Complete set of work and personal references
+</ResponseField>
+
+<ResponseField name="GetEmpleosToReferencias" type="array">
+  Previous employment records to help identify work references
+</ResponseField>
+
+<ResponseField name="ni" type="string">
+  Flag indicating nuevo ingreso evaluation type
+</ResponseField>
+
+---
+
+## Save References
+
+<api method="POST" path="/SaveReferencias" />
+
+Saves all reference information (work and personal references).
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID for the candidate
+</ParamField>
+
+#### Work Reference 1
+
+<ParamField body="referenciasNombre1" type="string" required>
+  Full name of first work reference
+</ParamField>
+
+<ParamField body="referenciasPuesto1" type="string" required>
+  Position/title of first work reference
+</ParamField>
+
+<ParamField body="referenciasEmpresa1" type="string" required>
+  Company/organization of first work reference
+</ParamField>
+
+<ParamField body="referenciasTelefono1" type="string" required>
+  Phone number of first work reference
+</ParamField>
+
+#### Work Reference 2
+
+<ParamField body="referenciasNombre2" type="string" required>
+  Full name of second work reference
+</ParamField>
+
+<ParamField body="referenciasPuesto2" type="string" required>
+  Position/title of second work reference
+</ParamField>
+
+<ParamField body="referenciasEmpresa2" type="string" required>
+  Company/organization of second work reference
+</ParamField>
+
+<ParamField body="referenciasTelefono2" type="string" required>
+  Phone number of second work reference
+</ParamField>
+
+#### Work Reference 3
+
+<ParamField body="referenciasNombre3" type="string" required>
+  Full name of third work reference
+</ParamField>
+
+<ParamField body="referenciasPuesto3" type="string" required>
+  Position/title of third work reference
+</ParamField>
+
+<ParamField body="referenciasEmpresa3" type="string" required>
+  Company/organization of third work reference
+</ParamField>
+
+<ParamField body="referenciasTelefono3" type="string" required>
+  Phone number of third work reference
+</ParamField>
+
+#### Personal Reference 1
+
+<ParamField body="referenciasNombreP1" type="string" required>
+  Full name of first personal reference
+</ParamField>
+
+<ParamField body="referenciasFijoP1" type="string">
+  Landline phone number of first personal reference
+</ParamField>
+
+<ParamField body="referenciasCelularP1" type="string" required>
+  Mobile phone number of first personal reference
+</ParamField>
+
+#### Personal Reference 2
+
+<ParamField body="referenciasNombreP2" type="string" required>
+  Full name of second personal reference
+</ParamField>
+
+<ParamField body="referenciasFijoP2" type="string">
+  Landline phone number of second personal reference
+</ParamField>
+
+<ParamField body="referenciasCelularP2" type="string" required>
+  Mobile phone number of second personal reference
+</ParamField>
+
+#### Personal Reference 3
+
+<ParamField body="referenciasNombreP3" type="string" required>
+  Full name of third personal reference
+</ParamField>
+
+<ParamField body="referenciasFijoP3" type="string">
+  Landline phone number of third personal reference
+</ParamField>
+
+<ParamField body="referenciasCelularP3" type="string" required>
+  Mobile phone number of third personal reference
+</ParamField>
+
+<ParamField body="encryptedData" type="string" required>
+  Encrypted evaluation data for redirection
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Referencias guardadas con exito !" - References saved successfully
+</ResponseField>
+
+Successful save redirects to the evaluation view page.
+
+### Example Request
+
+```json
+{
+  "evalID": "12345",
+  "referenciasNombre1": "Lic. Roberto Martínez",
+  "referenciasPuesto1": "Director de Recursos Humanos",
+  "referenciasEmpresa1": "Seguridad Estatal",
+  "referenciasTelefono1": "6181234567",
+  "referenciasNombre2": "Ing. Carmen López",
+  "referenciasPuesto2": "Jefa de Departamento",
+  "referenciasEmpresa2": "Policía Preventiva",
+  "referenciasTelefono2": "6189876543",
+  "referenciasNombre3": "Cap. Miguel Hernández",
+  "referenciasPuesto3": "Comandante",
+  "referenciasEmpresa3": "CEACC Durango",
+  "referenciasTelefono3": "6185554321",
+  "referenciasNombreP1": "Jorge Ramírez Soto",
+  "referenciasFijoP1": "6183334455",
+  "referenciasCelularP1": "6181112233",
+  "referenciasNombreP2": "Ana María Gutiérrez",
+  "referenciasFijoP2": "",
+  "referenciasCelularP2": "6182223344",
+  "referenciasNombreP3": "Pedro Sánchez Villa",
+  "referenciasFijoP3": "6184445566",
+  "referenciasCelularP3": "6183334455"
+}
+```
+
+---
+
+## Update References
+
+<api method="POST" path="/UpdateReferencias" />
+
+Updates existing reference information. Contains all the same fields as SaveReferencias.
+
+### Request Body
+
+Same fields as SaveReferencias endpoint.
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Referencias guardadas con exito !" - References updated successfully
+</ResponseField>
+
+Successful update redirects to the evaluation view page.
+
+---
+
+## Error Responses
+
+All endpoints return:
+
+<ResponseField name="message" type="string">
+  "Algo salio mal !" - Generic error message indicating something went wrong
+</ResponseField>
+
+The endpoint will redirect back to the previous page with the error message displayed as a flash message.
+
+---
+
+## Reference Requirements
+
+### Work References (Laborales)
+
+All three work references must include:
+- Full name
+- Current position/title
+- Company/organization name
+- Contact phone number
+
+Work references should be:
+- Former supervisors or managers
+- Colleagues from previous positions
+- HR representatives from previous employers
+- NOT family members
+- NOT friends (use personal references for this)
+
+### Personal References (Personales)
+
+All three personal references must include:
+- Full name
+- At least one phone number (mobile required, landline optional)
+
+Personal references should be:
+- Non-family members who have known the candidate for a significant period
+- Friends, neighbors, or acquaintances who can vouch for character
+- Community leaders or professionals who know the candidate
+- NOT current or former supervisors (use work references for this)
+- NOT family members
+
+---
+
+## Workflow
+
+1. Retrieve existing reference data using GET endpoint
+2. For new hire candidates, review previous employment records to identify potential work references
+3. Collect all six references (3 work + 3 personal)
+4. Save all references using a single SaveReferencias request
+5. Update references if information changes
+
+---
+
+## Best Practices
+
+### Data Collection
+
+- Verify all phone numbers are correct and active
+- Ensure work references are from different employers or departments
+- Confirm personal references are not related to the candidate
+- Obtain permission from references before submitting their information
+
+### Data Quality
+
+- Use complete, formal names (not nicknames)
+- Include area codes with all phone numbers
+- Verify company names are spelled correctly
+- Ensure position titles are accurate
+
+### Validation
+
+- All three work references must be provided
+- All three personal references must be provided
+- Each personal reference must have at least a mobile phone number
+- References will be contacted during the background investigation process
+
+---
+
+## Integration Notes
+
+- This is typically the final step in the data capture process
+- Successfully saving references redirects to the evaluation view (not back to the form)
+- The system distinguishes between permanencia and nuevo ingreso evaluation types
+- For nuevo ingreso candidates, previous employment records are displayed to assist in identifying appropriate work references
+
+---
+
+## Common Issues
+
+<Warning>
+  **Missing Phone Numbers**: Ensure all work references have at least one phone number and all personal references have at least a mobile number.
+</Warning>
+
+<Warning>
+  **Family Members as References**: Do not include family members as either work or personal references. The system tracks family members separately.
+</Warning>
+
+<Warning>
+  **Incomplete Data**: All six references (3 work + 3 personal) must be provided in a single submission. Partial submissions are not supported.
+</Warning>

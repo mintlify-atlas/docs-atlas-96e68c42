@@ -1,0 +1,434 @@
+---
+title: Academic Data
+description: Record your educational background and professional training
+---
+
+## Overview
+
+The Academic Data section captures your educational history, including your highest degree earned and any additional professional training, certifications, or courses you've completed.
+
+<Info>
+This section has two parts:
+1. **Highest Academic Degree** (required) - Your formal education
+2. **Additional Training/Certifications** (optional but recommended) - Professional development courses
+</Info>
+
+## Accessing Academic Data Form
+
+From your evaluation dashboard, click on **Academic Data** (Datos Académicos). You'll be directed to:
+
+```
+/captureData/academicosCapture/[encrypted_evaluation_id]
+```
+
+## Before You Begin
+
+Gather information about:
+
+### Your Highest Degree
+- Degree type (Primaria, Secundaria, Preparatoria, Licenciatura, Maestría, Doctorado)
+- Institution name
+- Start and end dates (or period)
+- Supporting document type (certificate, diploma, transcript)
+- Document location
+
+### Professional Training (if applicable)
+- Course or certification name
+- Training institution
+- Start and end dates
+- Type of document received (certificate, diploma, constancia)
+
+<Note>
+Have your educational documents ready. You'll need to reference them and eventually upload them in the Documents section.
+</Note>
+
+## Part 1: Highest Academic Degree
+
+<Steps>
+  <Step title="Enter Degree Information">
+    **Último Grado** (`academicoUltimoGrado`)
+    - Select or enter your highest completed level of education:
+      - Primaria (Elementary School)
+      - Secundaria (Middle School)
+      - Preparatoria / Bachillerato (High School)
+      - Carrera Técnica (Technical Career)
+      - Licenciatura (Bachelor's Degree)
+      - Maestría (Master's Degree)
+      - Doctorado (Doctorate/PhD)
+
+    <Info>
+    Select your **highest completed** degree. If you're currently pursuing a degree but haven't graduated, list the highest degree you've already completed.
+    </Info>
+  </Step>
+
+  <Step title="Specify Time Period">
+    **Período Inicio** (`academicoPeriodoInicio`)
+    - When you started this educational program
+    - Format: Year or full date
+    - Example: "2015" or "Agosto 2015"
+
+    **Período Final** (`academicoPeriodoFinal`)
+    - When you completed/graduated
+    - Format: Year or full date
+    - Example: "2019" or "Julio 2019"
+
+    <Tip>
+    If you only remember the years, that's sufficient. Exact months are helpful but not mandatory.
+    </Tip>
+  </Step>
+
+  <Step title="Enter Institution Details">
+    **Institución** (`academicoInstitucion`)
+    - Full name of the school, college, or university
+    - Include the campus if there are multiple locations
+    - Examples:
+      - "Universidad Juárez del Estado de Durango"
+      - "Instituto Tecnológico de Durango"
+      - "Colegio de Bachilleres del Estado de Durango"
+  </Step>
+
+  <Step title="Document Information">
+    **Tipo de Documento** (`academicoDocumento`)
+    - What proof of completion you have:
+      - Título (Degree/Title)
+      - Cédula Profesional (Professional License)
+      - Certificado (Certificate)
+      - Diploma
+      - Constancia (Letter of Completion)
+      - Boleta de Calificaciones (Transcript)
+
+    **Ubicación del Documento** (`academicoUbicacion`)
+    - Where the physical document is located
+    - Examples:
+      - "En mi domicilio"
+      - "En oficina de recursos humanos"
+      - "En trámite de expedición"
+      - "Extraviado" (if lost)
+
+    <Warning>
+    You will need to upload this document later in the Documents section. Make sure you know where it is or can obtain a copy.
+    </Warning>
+  </Step>
+
+  <Step title="Save Degree Information">
+    Click the save button to store your highest academic degree.
+
+    Success message: **"Último grado académico guardado"**
+
+    The system saves this to the `tbl_dgo_academicos` table.
+  </Step>
+</Steps>
+
+## Part 2: Additional Training & Certifications
+
+After saving your highest degree, you can add professional training courses, workshops, certifications, or diplomas.
+
+<Steps>
+  <Step title="Click Add Training">
+    Look for the section to add additional training or capacitaciones.
+  </Step>
+
+  <Step title="Enter Course Details">
+    **Detalle de Capacitación** (`capacitacionDetalle`)
+    - Full name of the course, workshop, or certification
+    - Be specific
+    - Examples:
+      - "Curso de Derechos Humanos y Uso de la Fuerza"
+      - "Certificación en Cadena de Custodia"
+      - "Diplomado en Investigación Criminal"
+      - "Taller de Ética Policial"
+  </Step>
+
+  <Step title="Training Period">
+    **Inicio** (`capacitacionInicio`)
+    - Start date of the training
+    - Can be year, month/year, or full date
+
+    **Final** (`capacitacionFinal`)
+    - Completion date
+    - Use same format as start date
+
+    <Info>
+    For single-day workshops, you can use the same date for both inicio and final.
+    </Info>
+  </Step>
+
+  <Step title="Training Institution">
+    **Institución** (`capacitacionInstitucion`)
+    - Organization that provided the training
+    - Examples:
+      - "Centro de Control de Confianza"
+      - "Secretaría de Seguridad Pública"
+      - "Instituto Nacional de Ciencias Penales"
+      - Name of private training company
+  </Step>
+
+  <Step title="Proof of Completion">
+    **Tipo de Documento** (`capacitacionDocumento`)
+    - What you received upon completion:
+      - Constancia (Certificate of Attendance)
+      - Diploma
+      - Certificado (Certification)
+      - Reconocimiento (Recognition)
+
+    <Note>
+    Some trainings may not provide documentation. If this is the case, note "Sin documento" or "Verbal" and explain in observations if asked.
+    </Note>
+  </Step>
+
+  <Step title="Save Training">
+    Click save to add this training to your list.
+
+    Success message: **"Capacitación guardada!"**
+
+    The training is saved to `tbl_dgo_capacitaciones` table.
+  </Step>
+
+  <Step title="Add More Training (Optional)">
+    Repeat steps 1-5 for each additional training, course, or certification.
+
+    <Tip>
+    Add the most relevant and recent training first. Focus on:
+    - Required certifications for your position
+    - Recent professional development (last 5 years)
+    - Specialized training related to your duties
+    </Tip>
+  </Step>
+</Steps>
+
+## Managing Academic Data
+
+### Viewing Your Academic Information
+
+The page displays:
+- Your highest academic degree
+- A list of all training/certifications you've added
+
+### Updating Your Degree Information
+
+To edit your highest academic degree:
+
+1. The form will show your existing degree information
+2. Make any necessary changes
+3. Click update/save
+4. Success message: **"Se actualizo grado academico"**
+
+### Editing a Training Entry
+
+To modify a training record:
+
+1. Click the edit button next to the training
+2. Update the fields
+3. Click save
+4. Success message: **"Se actualizó capacitación"**
+
+### Deleting Entries
+
+**Delete a Training/Certification:**
+1. Click delete next to the training
+2. Confirm deletion
+3. Success message: **"Se eliminó capacitación"**
+
+**Delete Your Degree:**
+1. Use the delete option for the degree section
+2. Confirm deletion
+3. Success message: **"Se eliminó grado academico"**
+
+<Warning>
+Deleting your academic degree removes it completely. You'll need to re-enter all information.
+</Warning>
+
+## Deleting All Academic Data
+
+From the evaluation dashboard, you can delete the entire Academic Data section:
+
+1. Find the delete option for Academic Data
+2. Confirm deletion
+3. Both degree and all training records will be removed
+4. Success message: **"Datos academicos eliminados"**
+
+<Warning>
+This removes EVERYTHING: your degree and all training/certifications. Use with extreme caution.
+</Warning>
+
+## Best Practices
+
+### What Training to Include
+
+<AccordionGroup>
+  <Accordion title="Definitely Include">
+    - Required certifications for your position
+    - C3 evaluations and certifications
+    - Police academy or similar foundational training
+    - Specialized law enforcement training
+    - Recent courses (last 5 years)
+    - Any training with official certification
+  </Accordion>
+
+  <Accordion title="Consider Including">
+    - Relevant workshops and seminars
+    - Online courses with certificates
+    - In-house training programs
+    - First aid, CPR, or emergency response training
+    - Language courses
+    - Computer skills training
+  </Accordion>
+
+  <Accordion title="Usually Not Needed">
+    - Very brief orientations (less than 4 hours)
+    - Informal team meetings
+    - Training without any documentation or verification
+    - Irrelevant personal hobbies or interests
+  </Accordion>
+</AccordionGroup>
+
+### Accuracy Tips
+
+1. **Verify dates**: Check your documents for accurate dates
+2. **Use official names**: Use the institution's full legal name
+3. **Be specific**: "Diplomado en Investigación" is better than "Curso"
+4. **Document types matter**: Know the difference between constancia, certificado, and diploma
+5. **Keep records accessible**: You'll need to upload proof of education later
+
+### Common Scenarios
+
+<AccordionGroup>
+  <Accordion title="Incomplete Degree">
+    **Situation:** Started university but didn't finish.
+    
+    **Solution:** List your highest completed degree (likely Preparatoria). Don't list incomplete degrees.
+  </Accordion>
+
+  <Accordion title="Foreign Degree">
+    **Situation:** Degree from another country.
+    
+    **Solution:** 
+    - List the degree type equivalent in Mexico
+    - Include the country in the institution name
+    - Note if it's been validated/revalidated in México
+  </Accordion>
+
+  <Accordion title="Multiple Degrees">
+    **Situation:** Have both Licenciatura and Maestría.
+    
+    **Solution:** List only your highest (Maestría) in the degree section. You can mention the Licenciatura in capacitaciones if relevant.
+  </Accordion>
+
+  <Accordion title="Lost Documents">
+    **Situation:** Can't find your certificate.
+    
+    **Solution:** 
+    - Enter "Extraviado" in document location
+    - Contact your institution about getting a duplicate
+    - You may need this for document upload later
+  </Accordion>
+
+  <Accordion title="Currently Studying">
+    **Situation:** Pursuing a degree right now.
+    
+    **Solution:** List your highest completed degree. Don't include current studies unless you've officially graduated.
+  </Accordion>
+</AccordionGroup>
+
+## Validation and Requirements
+
+### Required: Highest Academic Degree
+
+You MUST complete:
+- Último Grado (`academicoUltimoGrado`)
+- Período Inicio (`academicoPeriodoInicio`)
+- Período Final (`academicoPeriodoFinal`)
+- Institución (`academicoInstitucion`)
+- Tipo de Documento (`academicoDocumento`)
+- Ubicación (`academicoUbicacion`)
+
+### Optional: Training & Certifications
+
+While not mandatory, adding relevant training strengthens your evaluation. Each training entry requires:
+- Detalle (`capacitacionDetalle`)
+- Inicio and Final dates
+- Institución (`capacitacionInstitucion`)
+- Documento (`capacitacionDocumento`)
+
+## Connection to Documents Section
+
+Remember: You will need to upload proof of your education in the [Document Requirements](/guides/document-requirements) section:
+
+- **Permanencia**: Comprobante de Estudios (required)
+- **Nuevo Ingreso**: Comprobante de Estudios (required)
+
+Make sure the degree you list here matches the document you'll upload.
+
+## Section Completion
+
+The Academic Data section is considered complete when:
+
+1. You have entered your highest academic degree
+2. All required fields for the degree are filled
+3. You have saved the information
+
+<Info>
+Training/certifications are optional but recommended. Even without any additional training, the section can be marked complete if the degree is saved.
+</Info>
+
+## What Happens Next
+
+After completing the Academic Data section:
+
+1. Your evaluation progress increases to approximately 50% (3 of 6 sections)
+2. Return to your evaluation dashboard
+3. Academic Data section shows as complete ✓
+4. Proceed to the next section: Career Trajectory
+
+<Card title="Next: Career Trajectory" icon="briefcase" href="/guides/career-trajectory">
+  Continue to the Career Trajectory section to add your work history
+</Card>
+
+## Field Reference
+
+### Highest Academic Degree
+
+| Display Name | Database Column | Type | Required |
+|--------------|-----------------|------|----------|
+| Último Grado | `academicoUltimoGrado` | text | Yes |
+| Período Inicio | `academicoPeriodoInicio` | text/date | Yes |
+| Período Final | `academicoPeriodoFinal` | text/date | Yes |
+| Institución | `academicoInstitucion` | text | Yes |
+| Tipo de Documento | `academicoDocumento` | text | Yes |
+| Ubicación del Documento | `academicoUbicacion` | text | Yes |
+
+### Training & Certifications
+
+| Display Name | Database Column | Type | Required |
+|--------------|-----------------|------|----------|
+| Detalle | `capacitacionDetalle` | text | Yes |
+| Inicio | `capacitacionInicio` | text/date | Yes |
+| Final | `capacitacionFinal` | text/date | Yes |
+| Institución | `capacitacionInstitucion` | text | Yes |
+| Documento | `capacitacionDocumento` | text | Yes |
+
+## Troubleshooting
+
+### Can't save degree information
+
+**Problem:** Save button not working.
+
+**Solution:**
+- Ensure all required fields are filled
+- Check date formats are valid
+- Try refreshing the page
+
+### Training not appearing in list
+
+**Problem:** Added training but don't see it.
+
+**Solution:**
+- Verify you clicked save
+- Refresh the page
+- Check you're on the correct evaluation
+
+### Which degree to list?
+
+**Problem:** Unsure which of multiple degrees to enter.
+
+**Solution:** Always list your **highest completed** degree. If you have multiple degrees at the same level (e.g., two Licenciaturas), list the most recent or most relevant to your current position.

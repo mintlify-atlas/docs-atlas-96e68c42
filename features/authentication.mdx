@@ -1,0 +1,320 @@
+---
+title: 'Authentication'
+description: 'Learn how vLife DGO implements secure session-based authentication with password hashing'
+---
+
+## Overview
+
+vLife DGO uses session-based authentication with bcrypt password hashing to secure employee access. The system manages user registration, login, logout, and session verification throughout the application.
+
+## Authentication Flow
+
+<Steps>
+  <Step title="User Registration">
+    New employees register by providing their complete information, which is validated before account creation.
+  </Step>
+  <Step title="Password Hashing">
+    Passwords are hashed using bcrypt with 10 salt rounds before storage.
+  </Step>
+  <Step title="Session Creation">
+    Upon successful login, a server-side session is created with user details.
+  </Step>
+  <Step title="Access Control">
+    Protected routes verify session validity before granting access.
+  </Step>
+</Steps>
+
+## User Registration
+
+### Registration Endpoint
+
+The `createUser` function handles new user registration with comprehensive validation.
+
+```javascript
+const createUser = async (req, res) => {
+  let { 
+    empNombreCompleto, 
+    empRFC, 
+    empUsuario, 
+    empContrasenia,
+    empTipoEval,
+    empMotivo,
+    empDependencia,
+    empSexo
+  } = req.body;
+
+  try {
+    // Check if user already exists
+    const [rows] = await PoolvLife.query(AuthModel.findUser, empUsuario);
+    
+    if (rows.length === 0) {
+      // Hash password with bcrypt
+      const saltRounds = 10;
+      bcrypt.hash(
+        empContrasenia,
+        saltRounds,
+        async function (err, empPassword) {
+          const usrData = {
+            empNombreCompleto,
+            empRFC,
+            empUsuario,
+            empSexo,
+            empContrasenia,
+            empPassword,
+            empTipoEval,
+            empMotivo,
+            empDependencia,
+          };
+          await PoolvLife.query(AuthModel.addUser, usrData);
+        }
+      );
+      req.flash("success", "Usuario guardado !");
+      res.redirect("back");
+    } else {
+      req.flash("message", "Este usuario ya existe !");
+      res.redirect("back");
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+```
+
+<Note>
+  Registration includes evaluation type (Permanencia or Nuevo Ingreso) and dependency information for proper evaluation routing.
+</Note>
+
+### Registration Data Fields
+
+| Field | Description |
+|-------|-------------|
+| `empNombreCompleto` | Employee's full name |
+| `empRFC` | Tax identification number |
+| `empUsuario` | Unique username for login |
+| `empContrasenia` | Plain text password (hashed before storage) |
+| `empTipoEval` | Evaluation type (1=Permanencia, 2=Nuevo Ingreso) |
+| `empMotivo` | Reason for evaluation |
+| `empDependencia` | Government dependency/department |
+| `empSexo` | Gender |
+
+## Login Process
+
+### User Validation
+
+The `userValidator` function authenticates users by comparing hashed passwords.
+
+```javascript
+const userValidator = async (req, res) => {
+  const { empUsuario, empContrasenia } = req.body;
+  
+  try {
+    const [rows] = await PoolvLife.query(AuthModel.findUserLogin, empUsuario);
+    
+    if (rows.length === 1) {
+      const usrPassword = rows[0].empPassword;
+      const usrNombre = rows[0].empNombreCompleto;
+      const usrId = rows[0].empID;
+      
+      // Compare provided password with stored hash
+      bcrypt.compare(empContrasenia, usrPassword, function (e, result) {
+        if (result) {
+          // Create session
+          req.session.loggedin = true;
+          req.session.name = usrNombre;
+          req.session.usrId = usrId;
+          
+          req.flash("success", `Nuevo inicio de sesión !`);
+          res.redirect("/auth/profile");
+        } else {
+          req.flash("message", "Usuario no valido");
+          res.redirect("back");
+        }
+      });
+    } else {
+      req.flash("message", "Usuario no valido");
+      res.redirect("back");
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+```
+
+### Session Data
+
+Successful authentication stores the following in the session:
+
+- `req.session.loggedin` - Boolean flag indicating authenticated state
+- `req.session.name` - Employee's full name for display
+- `req.session.usrId` - Unique user ID for database queries
+
+## Session Configuration
+
+The application uses `express-session` with memory store for session management.
+
+```javascript
+import session from "express-session";
+
+const sessionStore = new session.MemoryStore();
+app.use(cookieParser("secret"));
+app.use(
+  session({
+    store: sessionStore,
+    saveUninitialized: true,
+    resave: true,
+    secret: "secret",
+  })
+);
+```
+
+<Warning>
+  The memory store is suitable for development but should be replaced with a persistent store (like Redis) for production deployments.
+</Warning>
+
+## Protected Routes
+
+### Session Verification
+
+Routes check session status before rendering protected content.
+
+```javascript
+const profile = async (req, res) => {
+  try {
+    const usrId = req.session.usrId;
+    const [rows] = await PoolvLife.query(AuthModel.getDataUser, usrId);
+    const anio = new Date().getFullYear();
+    
+    const [currentEvaluation] = await PoolvLife.query(
+      AuthModel.getLastEvaluation,
+      [anio, usrId]
+    );
+    
+    // Render profile with user data
+    res.render("profile", {
+      user: req.session.name,
+      empleado: rows[0],
+      currentEval: currentEvaluation[0],
+      // ... additional data
+    });
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+### Redirect Logic
+
+Pages redirect based on authentication state:
+
+```javascript
+const signin = async (req, res) => {
+  if (req.session.loggedin != true) {
+    res.render("auth/signin");
+  } else {
+    // Already logged in, redirect to profile
+    res.redirect("/auth/profile");
+  }
+};
+```
+
+## Logout
+
+The logout process destroys the session completely.
+
+```javascript
+const logout = async (req, res) => {
+  if (req.session.loggedin == true) {
+    req.session.destroy();
+    res.redirect("/auth/signin");
+  } else {
+    res.redirect("/auth/signin");
+  }
+};
+```
+
+## Password Security
+
+### Bcrypt Implementation
+
+vLife DGO uses bcrypt for one-way password hashing:
+
+- **Salt Rounds**: 10 (provides good balance of security and performance)
+- **Algorithm**: bcrypt automatically handles salt generation and storage
+- **Comparison**: Uses `bcrypt.compare()` for constant-time comparison
+
+<Info>
+  Bcrypt is designed to be computationally expensive, making brute-force attacks impractical. The 10 salt rounds provide strong protection while maintaining reasonable performance.
+</Info>
+
+## User Profile Data
+
+Authenticated users can access their profile, which displays:
+
+- Employee information (name, RFC, dependency)
+- Current year evaluation status
+- Evaluation history
+- Uploaded documents
+- Comments and feedback
+- Generated certificates (constancias)
+
+## Flash Messages
+
+The system uses `connect-flash` for user feedback:
+
+```javascript
+// Success message
+req.flash("success", "Usuario guardado !");
+
+// Error message
+req.flash("message", "Usuario no valido");
+```
+
+Messages are automatically rendered in views through global variables:
+
+```javascript
+app.use(function (req, res, next) {
+  app.locals.success = req.flash("success");
+  app.locals.message = req.flash("message");
+  next();
+});
+```
+
+## Security Considerations
+
+<Warning>
+  For production deployment, consider:
+  - Using environment variables for session secrets
+  - Implementing HTTPS for all connections
+  - Adding rate limiting for login attempts
+  - Implementing session timeout
+  - Using a persistent session store (Redis, MongoDB)
+  - Adding CSRF protection
+  - Implementing account lockout after failed attempts
+</Warning>
+
+## Integration with Evaluations
+
+Authentication is tightly integrated with the evaluation system:
+
+1. User registration includes evaluation type selection
+2. Session stores `usrId` for linking evaluations to employees
+3. Profile displays current and historical evaluations
+4. Encrypted evaluation IDs ensure secure access
+
+## Related Controllers
+
+- **AuthController.js** (`src/controllers/AuthController.js:1`) - Main authentication logic
+- **AuthModel.js** - Database queries for user management
+- **app.js** (`src/app.js:34`) - Session configuration
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Evaluation Types" icon="list" href="/features/evaluation-types">
+    Learn about Permanencia and Nuevo Ingreso evaluations
+  </Card>
+  <Card title="Data Capture" icon="keyboard" href="/features/data-capture">
+    Explore the six-section data capture process
+  </Card>
+</CardGroup>

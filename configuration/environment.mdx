@@ -1,0 +1,188 @@
+---
+title: Environment Variables
+description: Configure vLife DGO environment variables for database, server, and security settings
+---
+
+## Overview
+
+vLife DGO uses environment variables to configure database connections, server settings, and security keys. All configuration is managed through the `src/config.js` file, which loads variables from a `.env` file using the `dotenv` package.
+
+## Required Variables
+
+The following environment variables should be configured for production deployments:
+
+<ParamField path="DB_HOST" type="string" default="localhost">
+  MySQL database host address. Use `localhost` for local development or the database server IP/hostname for production.
+</ParamField>
+
+<ParamField path="DB_PORT" type="number" default="3306">
+  MySQL database port. The standard MySQL port is 3306.
+</ParamField>
+
+<ParamField path="DB_USER" type="string" default="root">
+  Database username with appropriate privileges for the vLife DGO database.
+</ParamField>
+
+<ParamField path="DB_PASS" type="string" default="">
+  Database user password. **Must be set in production** for security.
+</ParamField>
+
+<ParamField path="DB_DATABASE" type="string" default="vlifedgo_db">
+  Name of the MySQL database for vLife DGO. This variable is used for multiple connection pools.
+</ParamField>
+
+<ParamField path="PORT" type="number" default="4001">
+  Port number where the Express server will listen for HTTP requests.
+</ParamField>
+
+<ParamField path="SUPER_KEY" type="string" default="key_cecc">
+  Encryption key used for data protection. **Must be changed in production** to a secure, random value.
+</ParamField>
+
+## Configuration File
+
+The configuration is centralized in `src/config.js`:
+
+```javascript
+import { config } from 'dotenv'
+
+config()
+
+export const PORT = process.env.PORT || 4001
+
+export const DB_HOST = process.env.DB_HOST || 'localhost'
+export const DB_PORT = process.env.DB_PORT || 3306
+export const DB_USER = process.env.DB_USER || 'root'
+export const DB_PASS = process.env.DB_PASS || ''
+export const DB_DATABASE = process.env.DB_DATABASE || 'vlifedgo_db'
+export const DB_DATABASEV2 = process.env.DB_DATABASE || 'vlifedgo_db'
+export const DB_DATA = process.env.DB_DATA || 'vlifedgo_db'
+export const SUPER_KEY = process.env.SUPER_KEY || 'key_cecc'
+```
+
+## Setup Instructions
+
+<Steps>
+  <Step title="Create .env file">
+    Create a `.env` file in the project root directory (same level as `package.json`).
+  </Step>
+  
+  <Step title="Add environment variables">
+    Copy the example configuration below and update with your values:
+    
+    ```bash
+    # Server Configuration
+    PORT=4001
+    
+    # Database Configuration
+    DB_HOST=localhost
+    DB_PORT=3306
+    DB_USER=vlife_user
+    DB_PASS=your_secure_password_here
+    DB_DATABASE=vlifedgo_db
+    
+    # Security
+    SUPER_KEY=your_secure_encryption_key_here
+    ```
+  </Step>
+  
+  <Step title="Secure the .env file">
+    Ensure `.env` is listed in your `.gitignore` file to prevent committing sensitive credentials:
+    
+    ```bash
+    # Add to .gitignore
+    .env
+    .env.local
+    .env.*.local
+    ```
+  </Step>
+  
+  <Step title="Verify configuration">
+    Start the application and check the console output to confirm the server is running on the correct port.
+  </Step>
+</Steps>
+
+## Environment-Specific Configuration
+
+### Development Environment
+
+```bash
+PORT=4001
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASS=
+DB_DATABASE=vlifedgo_db_dev
+SUPER_KEY=dev_key_change_in_production
+```
+
+### Production Environment
+
+```bash
+PORT=4001
+DB_HOST=production-db-server.example.com
+DB_PORT=3306
+DB_USER=vlife_prod_user
+DB_PASS=ComplexP@ssw0rd!2024
+DB_DATABASE=vlifedgo_db
+SUPER_KEY=RANDOM-SECURE-32-CHAR-STRING
+```
+
+<Warning>
+  **Production Security Checklist:**
+  - Never use default passwords or empty `DB_PASS`
+  - Generate a strong, random `SUPER_KEY` (minimum 32 characters)
+  - Use a dedicated database user with minimal required privileges
+  - Store `.env` file with restricted permissions (chmod 600)
+  - Never commit `.env` files to version control
+</Warning>
+
+## Default Values
+
+All environment variables have default fallback values defined in `src/config.js`. These defaults are suitable for local development but **must be changed for production**:
+
+| Variable | Default Value | Production Required |
+|----------|--------------|--------------------|
+| `PORT` | `4001` | Optional |
+| `DB_HOST` | `localhost` | Yes |
+| `DB_PORT` | `3306` | Optional |
+| `DB_USER` | `root` | Yes |
+| `DB_PASS` | `""` (empty) | **Yes** |
+| `DB_DATABASE` | `vlifedgo_db` | Optional |
+| `SUPER_KEY` | `key_cecc` | **Yes** |
+
+<Note>
+  The application uses the same `DB_DATABASE` value for multiple database connections (`DB_DATABASEV2` and `DB_DATA`). This is defined in the configuration file.
+</Note>
+
+## Troubleshooting
+
+### Cannot Connect to Database
+
+If you see database connection errors:
+
+1. Verify `DB_HOST` and `DB_PORT` are correct
+2. Ensure the database user has proper privileges
+3. Check that the database `vlifedgo_db` exists
+4. Confirm MySQL server is running
+
+### Application Not Starting
+
+If the server fails to start:
+
+1. Check if the `PORT` is already in use by another process
+2. Verify the `.env` file is in the correct location (project root)
+3. Ensure all required dependencies are installed (`npm install`)
+
+### Encryption Errors
+
+If you encounter encryption/decryption errors:
+
+1. Verify the `SUPER_KEY` matches the key used to encrypt existing data
+2. Do not change `SUPER_KEY` after data has been encrypted without proper migration
+
+## Related Documentation
+
+- [Database Configuration](/configuration/database) - MySQL connection pool setup
+- [Session Management](/configuration/session-management) - Session store configuration
+- [Installation Guide](/installation) - Complete deployment and security guidelines

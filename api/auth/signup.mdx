@@ -1,0 +1,160 @@
+---
+title: 'Sign Up'
+description: 'Register a new employee user account'
+---
+
+## POST /auth/createUser
+
+Creates a new employee user account in the vLife DGO system. Validates that the username is unique, encrypts the password using bcrypt, and stores the user data in the database.
+
+### Request Body
+
+<ParamField body="empNombreCompleto" type="string" required>
+  Employee's full name (e.g., "Juan Pérez García")
+</ParamField>
+
+<ParamField body="empRFC" type="string" required>
+  Employee's RFC (Registro Federal de Contribuyentes) - Mexican tax ID
+</ParamField>
+
+<ParamField body="empUsuario" type="string" required>
+  Desired username for the account. Must be unique in the system.
+</ParamField>
+
+<ParamField body="empContrasenia" type="string" required>
+  Plain text password. Will be hashed using bcrypt with 10 salt rounds.
+</ParamField>
+
+<ParamField body="empTipoEval" type="string" required>
+  Type of evaluation the employee is subject to (e.g., "PERMANENCIA", "NUEVO INGRESO")
+</ParamField>
+
+<ParamField body="empMotivo" type="string" required>
+  Reason or motive for the evaluation request
+</ParamField>
+
+<ParamField body="empDependencia" type="string" required>
+  Government department or dependency the employee belongs to
+</ParamField>
+
+<ParamField body="empSexo" type="string" required>
+  Employee's gender (e.g., "M" for Masculino, "F" for Femenino)
+</ParamField>
+
+### Registration Flow
+
+1. System checks if username (`empUsuario`) already exists
+2. If unique, password is hashed using bcrypt:
+   - **Algorithm:** bcrypt
+   - **Salt Rounds:** 10
+3. User data is inserted into `cat_dgo_empleados` table
+4. Flash success message displayed
+5. Redirects back to signup page
+
+### Success Response
+
+On successful registration:
+- **HTTP Status:** 302 (Redirect)
+- **Location:** Back to signup page (can now sign in)
+- **Flash Message:** "Usuario guardado !"
+- **Database:** New record created in `cat_dgo_empleados`
+
+```json
+{
+  "message": "Usuario guardado !",
+  "user": {
+    "empNombreCompleto": "Juan Pérez García",
+    "empRFC": "PEGJ850101ABC",
+    "empUsuario": "juan.perez",
+    "empSexo": "M",
+    "empTipoEval": "PERMANENCIA",
+    "empMotivo": "Evaluación anual",
+    "empDependencia": "Secretaría de Educación"
+  }
+}
+```
+
+### Error Responses
+
+<ResponseField name="Duplicate User" type="error">
+  When username already exists in the system
+  - **Flash Message:** "Este usuario ya existe !"
+  - **Action:** Redirects back to signup page
+  - **HTTP Status:** 302 (Redirect)
+</ResponseField>
+
+<ResponseField name="Server Error" type="error">
+  When database or bcrypt operation fails
+  - **Action:** Error logged to console
+  - **HTTP Status:** 500 (if not caught)
+</ResponseField>
+
+### Example Request
+
+```bash cURL
+curl -X POST https://api.vlife-dgo.ceacc.gob.mx/auth/createUser \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "empNombreCompleto=Juan Pérez García" \
+  -d "empRFC=PEGJ850101ABC" \
+  -d "empUsuario=juan.perez" \
+  -d "empContrasenia=SecurePass123" \
+  -d "empTipoEval=PERMANENCIA" \
+  -d "empMotivo=Evaluación anual" \
+  -d "empDependencia=Secretaría de Educación" \
+  -d "empSexo=M"
+```
+
+```javascript JavaScript
+const response = await fetch('/auth/createUser', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+  body: new URLSearchParams({
+    empNombreCompleto: 'Juan Pérez García',
+    empRFC: 'PEGJ850101ABC',
+    empUsuario: 'juan.perez',
+    empContrasenia: 'SecurePass123',
+    empTipoEval: 'PERMANENCIA',
+    empMotivo: 'Evaluación anual',
+    empDependencia: 'Secretaría de Educación',
+    empSexo: 'M'
+  })
+});
+```
+
+### Password Security
+
+<Info>
+  Passwords are hashed using **bcrypt** with 10 salt rounds before storage. The plain text password is never stored in the database.
+</Info>
+
+**Password Hashing:**
+- Original password: `empContrasenia`
+- Hashed password: `empPassword` (stored in database)
+- Algorithm: bcrypt
+- Cost factor: 10 rounds
+
+### Database Schema
+
+User data is stored in the `cat_dgo_empleados` table:
+
+```sql
+INSERT INTO cat_dgo_empleados SET ?
+```
+
+**Duplicate Check Query:**
+```sql
+SELECT * FROM cat_dgo_empleados 
+WHERE empUsuario = ?
+```
+
+### Validation Notes
+
+<Warning>
+  All fields are required. Missing fields may cause database insertion errors.
+</Warning>
+
+<Note>
+  Username uniqueness is case-sensitive based on database collation settings.
+</Note>

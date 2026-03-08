@@ -1,0 +1,427 @@
+---
+title: 'Installation'
+description: 'Complete installation guide for vLife DGO development and production environments'
+---
+
+vLife DGO is an employee background evaluation system built with Node.js, Express, and MySQL. This guide covers detailed installation for both development and production environments.
+
+## System Requirements
+
+### Software Prerequisites
+
+- **Node.js**: v16.x or higher (v18.x recommended)
+- **MySQL**: v5.7 or higher (v8.0 recommended)
+- **npm**: v7.x or higher (comes with Node.js)
+- **Git**: For version control
+
+### Hardware Requirements
+
+- **Minimum**: 2GB RAM, 2 CPU cores, 10GB disk space
+- **Recommended**: 4GB RAM, 4 CPU cores, 20GB disk space
+
+## Development Installation
+
+<Steps>
+  <Step title="Verify Node.js Installation">
+    Check your Node.js version:
+
+    ```bash
+    node --version
+    npm --version
+    ```
+
+    If Node.js is not installed, download it from [nodejs.org](https://nodejs.org/).
+  </Step>
+
+  <Step title="Clone the Repository">
+    ```bash
+    git clone <repository-url>
+    cd vlife
+    ```
+  </Step>
+
+  <Step title="Install Dependencies">
+    Install all required packages defined in `package.json`:
+
+    ```bash
+    npm install
+    ```
+
+    This installs the following core dependencies:
+
+    ```json package.json
+    {
+      "dependencies": {
+        "express": "^4.18.2",
+        "mysql2": "^3.6.1",
+        "express-handlebars": "^7.1.2",
+        "express-session": "^1.17.3",
+        "bcrypt": "^5.1.1",
+        "jsonwebtoken": "^9.0.2",
+        "passport": "^0.6.0",
+        "puppeteer": "^15.5.0",
+        "qrcode": "^1.5.4",
+        "multer": "^2.0.2",
+        "dotenv": "^16.3.1"
+      },
+      "devDependencies": {
+        "nodemon": "^3.0.1"
+      }
+    }
+    ```
+  </Step>
+
+  <Step title="Configure MySQL Database">
+    ### Create Database
+
+    Connect to MySQL and create the database:
+
+    ```sql
+    CREATE DATABASE vlifedgo_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+    ```
+
+    ### Create MySQL User (Optional)
+
+    For production, create a dedicated user:
+
+    ```sql
+    CREATE USER 'vlife_user'@'localhost' IDENTIFIED BY 'secure_password';
+    GRANT ALL PRIVILEGES ON vlifedgo_db.* TO 'vlife_user'@'localhost';
+    FLUSH PRIVILEGES;
+    ```
+  </Step>
+
+  <Step title="Set Up Environment Variables">
+    Create a `.env` file in the project root directory:
+
+    ```bash .env
+    # Server Configuration
+    PORT=4001
+    
+    # Database Configuration
+    DB_HOST=localhost
+    DB_PORT=3306
+    DB_USER=root
+    DB_PASS=your_mysql_password
+    DB_DATABASE=vlifedgo_db
+    
+    # Security Key for Encryption
+    SUPER_KEY=key_cecc
+    ```
+
+    <Warning>
+      **Never commit the `.env` file to version control.** It contains sensitive credentials.
+    </Warning>
+
+    ### Environment Variables Explained
+
+    | Variable | Description | Default |
+    |----------|-------------|--------|
+    | `PORT` | HTTP server port | `4001` |
+    | `DB_HOST` | MySQL server hostname | `localhost` |
+    | `DB_PORT` | MySQL server port | `3306` |
+    | `DB_USER` | MySQL username | `root` |
+    | `DB_PASS` | MySQL password | (empty) |
+    | `DB_DATABASE` | Database name | `vlifedgo_db` |
+    | `SUPER_KEY` | Encryption key for sensitive data | `key_cecc` |
+  </Step>
+
+  <Step title="Create Required Directories">
+    The application uses a directory for file uploads. Create it:
+
+    ```bash
+    mkdir -p src/public/uploads
+    ```
+
+    <Note>
+      This directory is automatically excluded from Git via `.gitignore` to prevent committing uploaded files.
+    </Note>
+  </Step>
+
+  <Step title="Start the Development Server">
+    Run the application with auto-reload enabled:
+
+    ```bash
+    npm run dev
+    ```
+
+    The server will start with nodemon, which watches for file changes:
+
+    ```bash
+    [nodemon] 3.0.1
+    [nodemon] to restart at any time, enter `rs`
+    [nodemon] watching path(s): *.*
+    [nodemon] watching extensions: js,mjs,json
+    [nodemon] starting `node src/index.js`
+    vLife v3 running on 4001
+    ```
+  </Step>
+</Steps>
+
+## Production Installation
+
+### Using PM2 Process Manager
+
+For production environments, use PM2 to manage the Node.js process:
+
+<Steps>
+  <Step title="Install PM2 Globally">
+    ```bash
+    npm install -g pm2
+    ```
+  </Step>
+
+  <Step title="Start the Application">
+    ```bash
+    pm2 start src/index.js --name vlife-dgo
+    ```
+  </Step>
+
+  <Step title="Configure Auto-Restart on Boot">
+    ```bash
+    pm2 startup
+    pm2 save
+    ```
+  </Step>
+
+  <Step title="Monitor the Application">
+    ```bash
+    pm2 status
+    pm2 logs vlife-dgo
+    pm2 monit
+    ```
+  </Step>
+</Steps>
+
+### Using Nginx as Reverse Proxy
+
+Configure Nginx to proxy requests to vLife DGO:
+
+```nginx
+server {
+    listen 80;
+    server_name your-domain.com;
+
+    location / {
+        proxy_pass http://localhost:4001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## Database Connection
+
+The application uses MySQL2 connection pooling for optimal performance. Here's how it's configured:
+
+```javascript src/database/Connection.js
+import { createPool } from "mysql2/promise";
+import {
+  DB_HOST,
+  DB_PORT,
+  DB_USER,
+  DB_PASS,
+  DB_DATABASE
+} from "../config.js";
+
+export const PoolvLife = createPool({
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASS,
+  port: DB_PORT,
+  database: DB_DATABASE,
+  dateStrings: true,
+});
+```
+
+The connection pool is automatically managed and reused across requests.
+
+## Application Structure
+
+After installation, your application structure will be:
+
+```
+vlife/
+├── src/
+│   ├── index.js              # Entry point
+│   ├── app.js                # Express app configuration
+│   ├── config.js             # Environment configuration
+│   ├── controllers/          # Request handlers
+│   ├── database/
+│   │   └── Connection.js     # Database connection pool
+│   ├── models/               # Data models
+│   ├── routes/               # API routes
+│   ├── views/                # Handlebars templates
+│   ├── public/               # Static assets
+│   │   └── uploads/          # User uploaded files
+│   ├── middlewares/          # Custom middleware
+│   └── helpers/              # Utility functions
+├── package.json
+├── .env                      # Environment variables (create this)
+└── README.md
+```
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Database Connection Errors">
+    **Error**: `ER_ACCESS_DENIED_ERROR`
+
+    **Solution**: Verify your MySQL credentials:
+
+    ```bash
+    mysql -u root -p
+    ```
+
+    If successful, update your `.env` file with the correct credentials.
+
+    ---
+
+    **Error**: `ECONNREFUSED`
+
+    **Solution**: Ensure MySQL is running:
+
+    ```bash
+    # Linux
+    sudo systemctl status mysql
+    sudo systemctl start mysql
+
+    # macOS
+    brew services start mysql
+
+    # Windows
+    net start MySQL80
+    ```
+  </Accordion>
+
+  <Accordion title="Port Already in Use">
+    **Error**: `EADDRINUSE: address already in use :::4001`
+
+    **Solution**: Either change the port in `.env`:
+
+    ```bash .env
+    PORT=4002
+    ```
+
+    Or find and kill the process using port 4001:
+
+    ```bash
+    # Linux/macOS
+    lsof -i :4001
+    kill -9 <PID>
+
+    # Windows
+    netstat -ano | findstr :4001
+    taskkill /PID <PID> /F
+    ```
+  </Accordion>
+
+  <Accordion title="File Upload Issues">
+    **Error**: Files not uploading or directory errors
+
+    **Solution**: Ensure the uploads directory exists with proper permissions:
+
+    ```bash
+    mkdir -p src/public/uploads
+    chmod 755 src/public/uploads
+    ```
+
+    The application is configured to accept files up to 20MB:
+
+    ```javascript src/app.js
+    app.use(multer({
+      storage: storage,
+      limits: { fileSize: 20000000 }, // 20MB
+    }).single('file'))
+    ```
+  </Accordion>
+
+  <Accordion title="Puppeteer Installation Issues">
+    **Error**: Chromium download fails during `npm install`
+
+    **Solution**: Install Chromium dependencies:
+
+    ```bash
+    # Ubuntu/Debian
+    sudo apt-get install -y chromium-browser
+
+    # Or skip Chromium download and use system Chrome
+    PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm install
+    ```
+  </Accordion>
+
+  <Accordion title="Session Issues">
+    **Problem**: Users getting logged out frequently
+
+    **Solution**: The application uses memory-based sessions. For production, consider using MySQL session store:
+
+    ```javascript
+    import MySQLStore from 'express-mysql-session';
+    
+    const sessionStore = MySQLStore(session);
+    const sessionStoreConfig = new sessionStore({
+      host: DB_HOST,
+      port: DB_PORT,
+      user: DB_USER,
+      password: DB_PASS,
+      database: DB_DATABASE
+    });
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Verifying Installation
+
+Test that all components are working:
+
+<Steps>
+  <Step title="Check Server Status">
+    ```bash
+    curl http://localhost:4001
+    ```
+
+    Should return HTML or redirect to `/auth/home`.
+  </Step>
+
+  <Step title="Check Database Connection">
+    The application will log any database connection errors to the console. If you see:
+
+    ```
+    vLife v3 running on 4001
+    ```
+
+    Without any errors, the database connection is successful.
+  </Step>
+
+  <Step title="Access the Application">
+    Navigate to `http://localhost:4001` in your browser. You should see the authentication interface.
+  </Step>
+</Steps>
+
+## Security Considerations
+
+<Warning>
+  **Important**: Before deploying to production:
+  
+  1. Change `SUPER_KEY` to a strong, unique value
+  2. Use strong MySQL passwords
+  3. Never commit `.env` to version control
+  4. Enable HTTPS with SSL certificates
+  5. Configure firewall rules to restrict database access
+  6. Keep dependencies updated: `npm audit fix`
+</Warning>
+
+## Next Steps
+
+Now that vLife DGO is installed:
+
+- Review [Environment Configuration](/configuration/environment) for advanced settings
+- Explore the [Authentication API](/api/auth/signin) to understand available endpoints
+- Learn about [Evaluation Types](/features/evaluation-types) and system design
+- Review [Database Configuration](/configuration/database) and connection setup

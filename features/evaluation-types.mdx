@@ -1,0 +1,385 @@
+---
+title: 'Evaluation Types'
+description: 'Understand the two evaluation types in vLife DGO: Permanencia and Nuevo Ingreso, and their different requirements'
+---
+
+## Overview
+
+vLife DGO supports two distinct evaluation types with different document requirements and workflows:
+
+1. **Permanencia (tipo_eval = 1)** - For existing employees maintaining their position
+2. **Nuevo Ingreso (tipo_eval = 2)** - For new employees entering the organization
+
+## Evaluation Types Comparison
+
+<CardGroup cols={2}>
+  <Card title="Permanencia" icon="user-check">
+    Existing employees maintaining their positions. Requires 5 mandatory documents and 6 data sections.
+  </Card>
+  <Card title="Nuevo Ingreso" icon="user-plus">
+    New employees joining the organization. Requires 6 mandatory documents and 6 data sections.
+  </Card>
+</CardGroup>
+
+## Creating an Evaluation
+
+### Evaluation Creation Flow
+
+<Steps>
+  <Step title="Check for Existing Evaluation">
+    System validates if employee already has an evaluation for the current year.
+  </Step>
+  <Step title="Create or Resume">
+    Either creates new evaluation or resumes existing one.
+  </Step>
+  <Step title="Generate Encrypted ID">
+    Creates unique encrypted identifier using ncrypt-js.
+  </Step>
+  <Step title="Redirect to Evaluation View">
+    User is directed to their evaluation workspace.
+  </Step>
+</Steps>
+
+### Implementation
+
+```javascript
+import ncrypt from "ncrypt-js";
+
+const validityEvaluation = async (req, res) => {
+  const { tipo_eval, empID } = req.body;
+  const anioEval = new Date().getFullYear();
+
+  try {
+    // Check if evaluation exists for current year
+    const [validate] = await PoolvLife.query(
+      EvaluationvLifeModel.validityEvaluation,
+      [empID, anioEval]
+    );
+
+    if (validate.length === 1) {
+      // Resume existing evaluation
+      req.flash("success", "Retomado evaluación ...");
+      res.redirect(
+        `/evaluacionvLife/evaluacionView/${validate[0].evalEncrypt}`
+      );
+    } else {
+      // Create new evaluation
+      const _superKey = "key_cecc";
+      const ncryptObjet = new ncrypt(_superKey);
+      
+      const [rowsAffected] = await PoolvLife.query(
+        EvaluationvLifeModel.createEvaluacion,
+        [empID, anioEval, tipo_eval]
+      );
+      
+      // Encrypt the evaluation ID
+      const dataToEncrypt = rowsAffected.insertId;
+      const encryptedData = ncryptObjet.encrypt(dataToEncrypt);
+      
+      await PoolvLife.query(EvaluationvLifeModel.encryptEvaluation, [
+        encryptedData,
+        dataToEncrypt,
+      ]);
+
+      req.flash("success", "Evaluación creada con exito");
+      res.redirect(`/evaluacionvLife/evaluacionView/${encryptedData}`);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+```
+
+<Info>
+  Each employee can only have one evaluation per year. The system automatically checks and either resumes the existing evaluation or creates a new one.
+</Info>
+
+## Encrypted Evaluation IDs
+
+### Security Implementation
+
+vLife DGO uses `ncrypt-js` to encrypt evaluation IDs for secure URL transmission.
+
+```javascript
+const evaluacionView = async (req, res) => {
+  const { encryptedData } = req.params;
+  
+  try {
+    const _superKey = "key_cecc";
+    const ncryptObjet = new ncrypt(_superKey);
+    
+    // Decrypt the evaluation ID
+    const decryptedData = ncryptObjet.decrypt(encryptedData);
+    
+    // Fetch evaluation data
+    const [getCurrentEvaluation] = await PoolvLife.query(
+      EvaluationvLifeModel.getEvaluationProcess,
+      decryptedData
+    );
+    
+    const tipo_eval = getCurrentEvaluation[0].tipoEvalID;
+    // ... continue processing
+  } catch (e) {
+    console.log(e);
+  }
+};
+```
+
+<Warning>
+  The encryption key `key_cecc` should be moved to environment variables in production for enhanced security.
+</Warning>
+
+## Permanencia Evaluation (tipo_eval = 1)
+
+### Required Documents
+
+Permanencia evaluations require **5 mandatory documents**:
+
+| Document | Description | Variable |
+|----------|-------------|----------|
+| Acta de Nacimiento | Birth certificate | `GetActaPerma` |
+| INE | Official identification | `GetINEPerma` |
+| Comprobante de Domicilio | Proof of address | `GetDomicilioPerma` |
+| Comprobante de Estudios | Educational documents | `GetEstudiosPerma` |
+| Comprobante de Ingresos | Income verification | `GetIngresosPerma` |
+
+### Optional Documents
+
+Additional optional documents for Permanencia:
+
+- State de cuenta bancaria (bank statements)
+- Cartilla militar (military service card)
+- Reporte de crédito (credit report)
+- Cuentas departamentales
+- Comprobante de pago de pareja
+- Fotografía de fachada
+- Documentos de inmuebles
+- Licencia de portación de arma
+- Tarjeta de circulación
+- Procedimientos legales
+- Actividades informales
+
+### Completion Requirements
+
+```javascript
+if (tipo_eval === 1) {
+  if (TotalCaptura === 6 && TotalCargaPerma === 5) {
+    const ListoRevision = true;
+    // Evaluation ready for review
+  }
+}
+```
+
+For Permanencia, evaluation is complete when:
+- All **6 data sections** are captured
+- All **5 mandatory documents** are uploaded
+
+## Nuevo Ingreso Evaluation (tipo_eval = 2)
+
+### Required Documents
+
+Nuevo Ingreso evaluations require **6 mandatory documents**:
+
+| Document | Description | Variable |
+|----------|-------------|----------|
+| Acta de Nacimiento | Birth certificate | `GetActaNI` |
+| INE | Official identification | `GetIneNI` |
+| Comprobante de Domicilio | Proof of address | `GetDomicilioNI` |
+| Comprobante de Estudios | Educational documents | `GetEstudiosNI` |
+| Cartilla Militar | Military service card | `GetCatrillaNI` |
+| Motivo de Ingreso | Reason for joining | `GetDataMotivo` |
+
+<Note>
+  Nuevo Ingreso requires "Motivo de Ingreso" (reason for joining), which is captured as text rather than an uploaded file.
+</Note>
+
+### Optional Documents
+
+Similar to Permanencia, with some specific additions:
+
+- Comprobante de ingresos opcionales
+- Estado de cuentas opcionales
+- Credito documents
+- Additional economic documentation
+
+### Completion Requirements
+
+```javascript
+if (tipo_eval === 2) {
+  if (TotalCaptura === 6 && TotalCargaNI === 6) {
+    const ListoRevision = true;
+    // Evaluation ready for review
+  }
+}
+```
+
+For Nuevo Ingreso, evaluation is complete when:
+- All **6 data sections** are captured
+- All **6 mandatory documents** are uploaded/provided
+
+## Progress Tracking
+
+### Capture Progress Calculation
+
+```javascript
+const Personales = datosPersonales.length;
+const Familiares = datosFamiliares.length;
+const Academicos = datosAcademicos.length;
+const Laborales = trayectoria.length;
+const Economicos = datosEconomicos.length;
+const Referencias = datosReferencias.length;
+
+const TotalCaptura = Personales + Familiares + Academicos + 
+                     Laborales + Economicos + Referencias;
+
+const ProcessCapture = TotalCaptura * 100 / 6;
+const ProcessCaptureFormat = ProcessCapture.toFixed(2);
+```
+
+This calculation provides a percentage of completion for the six required data sections.
+
+### Document Upload Tracking
+
+**For Permanencia:**
+
+```javascript
+const ActaPerma = GetActaPerma.length;
+const InePerma = GetINEPerma.length;
+const DomicilioPerma = GetDomicilioPerma.length;
+const EstudiosPerma = GetEstudiosPerma.length;
+const IngresosPerma = GetIngresosPerma.length;
+
+const TotalCargaPerma = ActaPerma + InePerma + DomicilioPerma + 
+                         EstudiosPerma + IngresosPerma;
+```
+
+**For Nuevo Ingreso:**
+
+```javascript
+const ActaNew = GetActaNI.length;
+const IneNew = GetIneNI.length;
+const DomicilioNI = GetDomicilioNI.length;
+const EstudiosNi = GetEstudiosNI.length;
+const IngresosNi = GetIngresosOpc.length;
+const MotivoIngreso = GetDataMotivo.length;
+const CreditoNi = GetCreditoPerma.length;
+
+const TotalCargaNI = ActaNew + IneNew + DomicilioNI + EstudiosNi + 
+                      IngresosNi + MotivoIngreso + CreditoNi;
+```
+
+## Evaluation View Rendering
+
+The system renders different data based on evaluation type:
+
+```javascript
+const tipo_eval = getCurrentEvaluation[0].tipoEvalID;
+
+if (tipo_eval === 1) {
+  // Render Permanencia view
+  res.render("evaluationvLifeViews/evaluationView", {
+    user: req.session.name,
+    dataEvaluation: getCurrentEvaluation[0],
+    Permanencia: true,
+    // ... Permanencia-specific data
+  });
+} else if (tipo_eval === 2) {
+  // Render Nuevo Ingreso view
+  res.render("evaluationvLifeViews/evaluationView", {
+    user: req.session.name,
+    dataEvaluation: getCurrentEvaluation[0],
+    NI: true,
+    // ... Nuevo Ingreso-specific data
+  });
+}
+```
+
+## Deleting Section Data
+
+vLife DGO allows employees to delete and re-enter section data:
+
+```javascript
+const DeletePersonales = async (req, res) => {
+  const { evalID } = req.body;
+  try {
+    await PoolvLife.query(EvaluationvLifeModel.DeletePersonales, evalID);
+    req.flash("success", "Datos personales eliminados");
+    res.redirect("back");
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+Available delete functions:
+- `DeletePersonales` - Personal data
+- `DeleteFamiliares` - Family data
+- `DeleteAcademicos` - Academic records (includes capacitaciones)
+- `DeleteTrayectoria` - Career trajectory (includes related tables)
+- `DeleteEconomicos` - Economic data (includes all sub-tables)
+- `DeleteReferencias` - References
+
+<Warning>
+  Deleting section data also removes all related sub-table entries. For example, deleting economic data removes all bank accounts, credits, properties, and vehicles.
+</Warning>
+
+## Finalizing Evaluations
+
+Once all requirements are met, employees can finalize their evaluation:
+
+```javascript
+const FinalizarEvaluacion = async (req, res) => {
+  const { encryptedData } = req.body;
+  try {
+    const _superKey = "key_cecc";
+    const ncryptObjet = new ncrypt(_superKey);
+    const evalID = ncryptObjet.decrypt(encryptedData);
+    const finalizadoFecha = Helpers.GetDate();
+    
+    const dataPacket = {
+      evalID,
+      finalizadoFecha,
+    };
+    
+    await PoolvLife.query(EvaluationvLifeModel.SaveFinalizado, dataPacket);
+    req.flash("success", "Evaluación Finalizada");
+    res.redirect(`/auth/profile`);
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+## Gender-Specific Handling
+
+The system handles gender-specific requirements:
+
+```javascript
+const [GetSexoEmpleado] = await PoolvLife.query(
+  EvaluationvLifeModel.getSexoEmpleado,
+  decryptedData
+);
+
+const Genero = GetSexoEmpleado[0].empSexo === "MUJER" ? true : false;
+```
+
+This flag adjusts requirements for military service card (Cartilla), which is typically required only for male employees.
+
+## Related Files
+
+- **EvaluationvLifeController.js** (`src/controllers/EvaluationvLifeController.js:1`) - Evaluation management
+- **EvaluationvLifeModel.js** - Database queries for evaluations
+- **AuthController.js** (`src/controllers/AuthController.js:108`) - User registration with evaluation type
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Data Capture" icon="keyboard" href="/features/data-capture">
+    Learn about the six data capture sections
+  </Card>
+  <Card title="Document Upload" icon="upload" href="/features/document-upload">
+    Understand the document upload process
+  </Card>
+</CardGroup>

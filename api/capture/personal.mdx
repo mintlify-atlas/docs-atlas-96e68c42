@@ -1,0 +1,311 @@
+---
+title: Personal Data Capture
+description: API endpoints for capturing and managing personal information during background evaluations
+---
+
+## Overview
+
+The Personal Data Capture API allows you to collect and manage comprehensive personal information for candidates undergoing background evaluations in the vLife DGO system. This includes demographic data, contact information, residential address, and social media profiles.
+
+## Authentication
+
+All endpoints require authentication via the `isLoggedIn` middleware. Users must have an active session to access these endpoints.
+
+## Get Personal Data
+
+<api method="GET" path="/personalesCapturePermanencia/:encryptedData" />
+
+Retrieves existing personal data for a specific evaluation.
+
+### Path Parameters
+
+<ParamField path="encryptedData" type="string" required>
+  Encrypted evaluation ID that uniquely identifies the candidate's evaluation record
+</ParamField>
+
+### Response
+
+Returns a view with the following data:
+
+<ResponseField name="dataPerma" type="object">
+  Complete personal data record for the candidate
+</ResponseField>
+
+<ResponseField name="GetRedesSociales" type="array">
+  Array of social media accounts associated with the candidate
+</ResponseField>
+
+<ResponseField name="dataRFCandCURP" type="object">
+  RFC (Tax ID) and CURP (National ID) information
+</ResponseField>
+
+---
+
+## Save Personal Data
+
+<api method="POST" path="/savePersonalesPermanencia" />
+
+Saves new personal data for a candidate in the permanencia (current employee) evaluation process.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID for the candidate
+</ParamField>
+
+#### Demographic Information
+
+<ParamField body="personalesNombre" type="string" required>
+  Full name of the candidate
+</ParamField>
+
+<ParamField body="personalesFechaNac" type="date" required>
+  Date of birth
+</ParamField>
+
+<ParamField body="personalesLugarNac" type="string" required>
+  Place of birth
+</ParamField>
+
+<ParamField body="personalesNacionalidad" type="string" required>
+  Nationality
+</ParamField>
+
+<ParamField body="personalesSexo" type="string" required>
+  Gender/Sex
+</ParamField>
+
+<ParamField body="personalesEdoCivil" type="string" required>
+  Marital status
+</ParamField>
+
+<ParamField body="personalesEdad" type="integer" required>
+  Age in years
+</ParamField>
+
+<ParamField body="personalesEscolaridad" type="string" required>
+  Educational level
+</ParamField>
+
+#### Government IDs
+
+<ParamField body="personalesRFC" type="string" required>
+  RFC (Registro Federal de Contribuyentes) - Tax ID
+</ParamField>
+
+<ParamField body="personalesCURP" type="string" required>
+  CURP (Clave Única de Registro de Población) - National ID
+</ParamField>
+
+#### Contact Information
+
+<ParamField body="personalesTelFijo" type="string">
+  Landline phone number
+</ParamField>
+
+<ParamField body="personalesTelCelular" type="string" required>
+  Mobile/cell phone number
+</ParamField>
+
+<ParamField body="personalesTelOficina" type="string">
+  Office phone number
+</ParamField>
+
+<ParamField body="personalesExt" type="string">
+  Office phone extension
+</ParamField>
+
+<ParamField body="personalesTelRecados" type="string">
+  Emergency/message phone number
+</ParamField>
+
+<ParamField body="personalesPersonaRecados" type="string">
+  Name of person who takes messages
+</ParamField>
+
+<ParamField body="personalesEmail" type="string" required>
+  Email address
+</ParamField>
+
+#### Residential Address
+
+<ParamField body="personalesCalleNum" type="string" required>
+  Street name and number
+</ParamField>
+
+<ParamField body="personalesColonia" type="string" required>
+  Neighborhood/Colony
+</ParamField>
+
+<ParamField body="personalesCP" type="string" required>
+  Postal code
+</ParamField>
+
+<ParamField body="personalesLocalidad" type="string" required>
+  City/Locality
+</ParamField>
+
+<ParamField body="personalesEstado" type="string" required>
+  State
+</ParamField>
+
+<ParamField body="personalesAnioDom" type="integer">
+  Years living at current address
+</ParamField>
+
+<ParamField body="personalesPersonasHab" type="integer">
+  Number of people living in the household
+</ParamField>
+
+<ParamField body="personalesEntreCalles" type="string">
+  Cross streets (between which streets)
+</ParamField>
+
+<ParamField body="personalesFachada" type="string">
+  Facade/building description
+</ParamField>
+
+<ParamField body="personalesObservaciones" type="text">
+  Additional observations or notes
+</ParamField>
+
+<ParamField body="personalesGoogle" type="string">
+  Google Maps link or coordinates
+</ParamField>
+
+<ParamField body="encryptedData" type="string" required>
+  Encrypted evaluation data for redirection
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Datos personales guardados, captura redes sociales" - Success message prompting to capture social networks
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "evalID": "12345",
+  "personalesNombre": "Juan Pérez García",
+  "personalesFechaNac": "1985-03-15",
+  "personalesLugarNac": "Durango, Durango",
+  "personalesNacionalidad": "Mexicana",
+  "personalesSexo": "M",
+  "personalesEdoCivil": "Casado",
+  "personalesEdad": 39,
+  "personalesEscolaridad": "Licenciatura",
+  "personalesRFC": "PEGJ850315ABC",
+  "personalesCURP": "PEGJ850315HDFRNN09",
+  "personalesTelCelular": "6181234567",
+  "personalesEmail": "juan.perez@example.com",
+  "personalesCalleNum": "Av. 20 de Noviembre 123",
+  "personalesColonia": "Centro",
+  "personalesCP": "34000",
+  "personalesLocalidad": "Durango",
+  "personalesEstado": "Durango",
+  "personalesAnioDom": 5,
+  "personalesPersonasHab": 4,
+  "personalesGoogle": "https://maps.google.com/?q=24.027,-104.653"
+}
+```
+
+---
+
+## Update Personal Data
+
+<api method="POST" path="/updatePersonalesPermanencia" />
+
+Updates existing personal data for a candidate.
+
+### Request Body
+
+<ParamField body="personalesID" type="string" required>
+  ID of the personal data record to update
+</ParamField>
+
+All other fields are the same as in the Save endpoint (except `evalID` is not required).
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Datos personales actualizados" - Personal data updated successfully
+</ResponseField>
+
+---
+
+## Save Social Network
+
+<api method="POST" path="/SaveRedSocial" />
+
+Adds a social media account to the candidate's profile.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID for the candidate
+</ParamField>
+
+<ParamField body="redesTipoRed" type="string" required>
+  Type of social network (e.g., "Facebook", "Twitter", "Instagram", "LinkedIn")
+</ParamField>
+
+<ParamField body="redesUsuario" type="string" required>
+  Username or profile URL on the social network
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Red social guardada" - Social network saved successfully
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "evalID": "12345",
+  "redesTipoRed": "Facebook",
+  "redesUsuario": "juan.perez.oficial"
+}
+```
+
+---
+
+## Delete Social Network
+
+<api method="POST" path="/DeleteRedSocial" />
+
+Removes a social media account from the candidate's profile.
+
+### Request Body
+
+<ParamField body="redesID" type="string" required>
+  ID of the social network record to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Red social borrada" - Social network deleted successfully
+</ResponseField>
+
+---
+
+## Error Responses
+
+All endpoints return the following error response on failure:
+
+<ResponseField name="message" type="string">
+  "Algo salio mal !" - Generic error message indicating something went wrong
+</ResponseField>
+
+The endpoint will redirect back to the previous page with the error message displayed as a flash message.
+
+## Notes
+
+- All POST endpoints redirect back to the previous page after completion
+- Flash messages are used to communicate success or error states
+- Personal data must be saved before social networks can be added
+- The encrypted data parameter ensures data security during transmission

@@ -1,0 +1,587 @@
+---
+title: Career/Trajectory Data Capture
+description: API endpoints for capturing work history, career trajectory, and employment records
+---
+
+## Overview
+
+The Career Trajectory API manages employment history and career information. The system handles two distinct evaluation types:
+
+- **Permanencia** (Current Employees): For existing employees undergoing background re-evaluation
+- **Nuevo Ingreso** (New Hires): For candidates applying for new positions
+
+Additionally, this API captures information about family members in legal processes and family members working in law enforcement.
+
+## Authentication
+
+All endpoints require authentication via the `isLoggedIn` middleware. Users must have an active session to access these endpoints.
+
+## Get Career Trajectory Data
+
+<api method="GET" path="/TrayectoriaCapturePermanencia/:encyptData" />
+
+Retrieves career trajectory data based on evaluation type.
+
+### Path Parameters
+
+<ParamField path="encyptData" type="string" required>
+  Encrypted evaluation data
+</ParamField>
+
+### Response
+
+For **Permanencia** (tipoEvalID === 1):
+
+<ResponseField name="dataTrayectoria" type="object">
+  Career trajectory data for current employees
+</ResponseField>
+
+<ResponseField name="GetAdscripciones" type="array">
+  Array of previous department assignments within the organization
+</ResponseField>
+
+<ResponseField name="GetFamProceso" type="array">
+  Family members with legal processes
+</ResponseField>
+
+<ResponseField name="GetFamCorp" type="array">
+  Family members in law enforcement/corporation
+</ResponseField>
+
+For **Nuevo Ingreso** (tipoEvalID !== 1):
+
+<ResponseField name="dataTrayectoria" type="object">
+  Career trajectory data for new hire candidates
+</ResponseField>
+
+<ResponseField name="GetEmpleos" type="array">
+  Array of previous employment records
+</ResponseField>
+
+<ResponseField name="GetFamProceso" type="array">
+  Family members with legal processes
+</ResponseField>
+
+<ResponseField name="GetFamCorp" type="array">
+  Family members in law enforcement/corporation
+</ResponseField>
+
+---
+
+## Save Career Trajectory (Permanencia)
+
+<api method="POST" path="/SaveTrayectoria" />
+
+Saves career trajectory information for current employees.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+#### Current Position Information
+
+<ParamField body="trayectoriaDependencia" type="string" required>
+  Government department or agency
+</ParamField>
+
+<ParamField body="trayectoriaAdscripcion" type="string" required>
+  Current department assignment
+</ParamField>
+
+<ParamField body="trayectoriaCargo" type="string" required>
+  Current job position/role
+</ParamField>
+
+<ParamField body="trayectoriaGrado" type="string" required>
+  Rank or grade level
+</ParamField>
+
+<ParamField body="trayectoriaFechaIngreso" type="date" required>
+  Date of entry into the organization
+</ParamField>
+
+<ParamField body="trayectoriaPromocion" type="date">
+  Date of last promotion
+</ParamField>
+
+<ParamField body="trayectoriaZonaTrabajo" type="string" required>
+  Work zone or area
+</ParamField>
+
+#### Job Responsibilities
+
+<ParamField body="trayectoriaPortaArma" type="string" required>
+  Whether employee carries a firearm ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaPersonal" type="string" required>
+  Whether manages personnel ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaCuantos" type="integer">
+  Number of people managed (if applicable)
+</ParamField>
+
+<ParamField body="trayectoriaFunciones" type="text" required>
+  Detailed description of job functions
+</ParamField>
+
+#### Supervisor Information
+
+<ParamField body="trayectoriaNombreJefe" type="string" required>
+  Supervisor's name
+</ParamField>
+
+<ParamField body="trayectoriaPuestoJefe" type="string" required>
+  Supervisor's position
+</ParamField>
+
+<ParamField body="trayectoriaNumJefe" type="string" required>
+  Supervisor's contact number
+</ParamField>
+
+#### Disciplinary History
+
+<ParamField body="trayectoriaAcusaciones" type="string" required>
+  Any accusations ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaProcesos" type="string" required>
+  Any legal processes ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaSanciones" type="string" required>
+  Any sanctions ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaProcedimientos" type="string" required>
+  Any administrative procedures ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaQuejas" type="string" required>
+  Any complaints ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaOcurrioProcesos" type="string">
+  Description of what occurred (if applicable)
+</ParamField>
+
+<ParamField body="trayectoriaMotivoProcesos" type="string">
+  Reason for the process
+</ParamField>
+
+<ParamField body="trayectoriaDocumentosProcesos" type="string">
+  Supporting documents
+</ParamField>
+
+#### CCC (Control, Confianza, Certificación) History
+
+<ParamField body="trayectoriaUltimoCcc" type="date">
+  Date of last CCC evaluation
+</ParamField>
+
+<ParamField body="trayectoriaDondeCcc" type="string">
+  Where the CCC was conducted
+</ParamField>
+
+<ParamField body="trayectoriaDependenciaCcc" type="string">
+  Agency that conducted the CCC
+</ParamField>
+
+<ParamField body="trayectoriaMotivoCcc" type="string">
+  Reason for CCC evaluation
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardaron datos laborales. Continua con Adscripciones" - Work data saved, continue with assignments
+</ResponseField>
+
+---
+
+## Update Career Trajectory (Permanencia)
+
+<api method="POST" path="/UpdateTrayectoria" />
+
+Updates career trajectory information for current employees. Contains all fields from SaveTrayectoria plus:
+
+<ParamField body="trayectoriaTipoEval" type="string" required>
+  Evaluation type identifier
+</ParamField>
+
+<ParamField body="trayectoriaNombreLegal" type="string">
+  Name of family member with legal issues
+</ParamField>
+
+<ParamField body="trayectoriaParentescoLegal" type="string">
+  Relationship to family member
+</ParamField>
+
+<ParamField body="trayectoriaOcurrioLegal" type="string">
+  What legal situation occurred
+</ParamField>
+
+<ParamField body="trayectoriaQueLegal" type="string">
+  Additional legal details
+</ParamField>
+
+<ParamField body="trayectoriaNombreCorp" type="string">
+  Name of family member in corporation
+</ParamField>
+
+<ParamField body="trayectoriaParentescoCorp" type="string">
+  Relationship to family member in corporation
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se actualizaron datos laborales. Continua con Adscripciones" - Work data updated
+</ResponseField>
+
+---
+
+## Save Career Trajectory (Nuevo Ingreso)
+
+<api method="POST" path="/SaveTrayectoriaNI" />
+
+Saves career trajectory for new hire candidates.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="trayectoriaPuestoEval" type="string" required>
+  Position applying for
+</ParamField>
+
+<ParamField body="trayectoriaEnteroVacante" type="string" required>
+  How they learned about the vacancy
+</ParamField>
+
+<ParamField body="trayectoriaFuncion1" type="text" required>
+  First key function they expect to perform
+</ParamField>
+
+<ParamField body="trayectoriaFuncion2" type="text" required>
+  Second key function
+</ParamField>
+
+<ParamField body="trayectoriaFuncion3" type="text" required>
+  Third key function
+</ParamField>
+
+<ParamField body="trayectoriaAcusaciones" type="string" required>
+  Any accusations ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaProcesos" type="string" required>
+  Any legal processes ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaSanciones" type="string" required>
+  Any sanctions ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaProcedimientos" type="string" required>
+  Any administrative procedures ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaQuejas" type="string" required>
+  Any complaints ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaOcurrio" type="string">
+  What occurred (if applicable)
+</ParamField>
+
+<ParamField body="trayectoriaMotivo" type="string">
+  Reason for the process
+</ParamField>
+
+<ParamField body="trayectoriaDocResolucion" type="string">
+  Resolution documents
+</ParamField>
+
+<ParamField body="trayectoriaCcc" type="string" required>
+  Whether they've had CCC before ("Si" or "No")
+</ParamField>
+
+<ParamField body="trayectoriaCccCuando" type="date">
+  When CCC was conducted
+</ParamField>
+
+<ParamField body="trayectoriaCccDependencia" type="string">
+  Which agency conducted CCC
+</ParamField>
+
+<ParamField body="trayectoriaCccMotivo" type="string">
+  Reason for CCC
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardó trayectoria laboral NI!" - Career trajectory saved for new hire
+</ResponseField>
+
+---
+
+## Update Career Trajectory (Nuevo Ingreso)
+
+<api method="POST" path="/UpdateTrayectoriaNI" />
+
+Updates career trajectory for new hires. Contains all SaveTrayectoriaNI fields plus:
+
+<ParamField body="trayectoriaLegalNombre" type="string">
+  Name of family member with legal issues
+</ParamField>
+
+<ParamField body="trayectoriaLegalParentesco" type="string">
+  Relationship to family member
+</ParamField>
+
+<ParamField body="trayectoriaLegalOcurrio" type="string">
+  What legal situation occurred
+</ParamField>
+
+<ParamField body="trayectoriaLegalQue" type="string">
+  Additional legal details
+</ParamField>
+
+<ParamField body="trayectoriaSpNombre" type="string">
+  Name of family member in service/corporation
+</ParamField>
+
+<ParamField body="trayectoriaSpParentesco" type="string">
+  Relationship
+</ParamField>
+
+<ParamField body="trayectoriaSpPuesto" type="string">
+  Their position
+</ParamField>
+
+<ParamField body="trayectoriaSpDependencia" type="string">
+  Their department/agency
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se actrualizó trayectoria laboral NI!" - Career trajectory updated
+</ResponseField>
+
+---
+
+## Save Previous Employment
+
+<api method="POST" path="/SaveEmpleos" />
+
+Saves previous employment records for new hire candidates.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="num" type="string" required>
+  Number of employment records being submitted ("1" for single, or count for multiple)
+</ParamField>
+
+For single employment (num === "1"):
+
+<ParamField body="empleoEmpresa" type="string" required>
+  Company name
+</ParamField>
+
+<ParamField body="empleoPuesto" type="string" required>
+  Position held
+</ParamField>
+
+<ParamField body="empleoDireccion" type="string" required>
+  Company address
+</ParamField>
+
+<ParamField body="empleoPeriodo" type="string" required>
+  Employment period
+</ParamField>
+
+<ParamField body="empleoIngreso" type="string" required>
+  Salary/income
+</ParamField>
+
+<ParamField body="empleoMotivo" type="string" required>
+  Reason for leaving
+</ParamField>
+
+For multiple employments, all fields above should be arrays.
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardaron empleos" - Employments saved successfully
+</ResponseField>
+
+---
+
+## Delete Employment
+
+<api method="POST" path="/DeleteEmpleo" />
+
+Deletes a previous employment record.
+
+### Request Body
+
+<ParamField body="empleoID" type="string" required>
+  ID of the employment record to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se elimino empleo" - Employment deleted successfully
+</ResponseField>
+
+---
+
+## Save Department Assignments
+
+<api method="POST" path="/SaveAdscripciones" />
+
+Saves previous department assignments for current employees.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="num" type="string" required>
+  Number of assignment records
+</ParamField>
+
+<ParamField body="adscripcionNombre" type="string" required>
+  Department name
+</ParamField>
+
+<ParamField body="adscripcionPuesto" type="string" required>
+  Position held
+</ParamField>
+
+<ParamField body="adscripcionPeriodo" type="string" required>
+  Time period
+</ParamField>
+
+<ParamField body="adscripcionIngreso" type="string" required>
+  Salary during this period
+</ParamField>
+
+<ParamField body="adscripcionMotivo" type="string" required>
+  Reason for change
+</ParamField>
+
+<ParamField body="adscripcionJefe" type="string" required>
+  Supervisor's name
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardaron adscripciones" - Assignments saved successfully
+</ResponseField>
+
+---
+
+## Save Family in Legal Process
+
+<api method="POST" path="/SaveFamProceso" />
+
+Records family members involved in legal processes.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="famProcesoNombre" type="string" required>
+  Name of family member
+</ParamField>
+
+<ParamField body="famProcesoParentesco" type="string" required>
+  Relationship to candidate
+</ParamField>
+
+<ParamField body="famProcesoCuando" type="string" required>
+  When the legal issue occurred
+</ParamField>
+
+<ParamField body="famProcesoQue" type="text" required>
+  Description of the legal situation
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardaro familiar con proceso" - Family member with legal process saved
+</ResponseField>
+
+---
+
+## Save Family in Corporation
+
+<api method="POST" path="/SaveFamCorp" />
+
+Records family members working in law enforcement or the corporation.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="corpFamiliarNombre" type="string" required>
+  Name of family member
+</ParamField>
+
+<ParamField body="corpFamiliarParentesco" type="string" required>
+  Relationship to candidate
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardaro familiar en coorporacion" - Family member in corporation saved
+</ResponseField>
+
+---
+
+## Error Responses
+
+All endpoints return:
+
+<ResponseField name="message" type="string">
+  "Algo salio mal !" - Generic error message
+</ResponseField>
+
+## Workflow
+
+### For Permanencia (Current Employees):
+1. Get trajectory data
+2. Save/Update career trajectory
+3. Save department assignments
+4. Add family in legal processes (if applicable)
+5. Add family in corporation (if applicable)
+
+### For Nuevo Ingreso (New Hires):
+1. Get trajectory data
+2. Save/Update career trajectory for new hire
+3. Save previous employments
+4. Add family in legal processes (if applicable)
+5. Add family in corporation (if applicable)

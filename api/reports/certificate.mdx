@@ -1,0 +1,383 @@
+---
+title: 'Certificate (Constancia)'
+description: 'Generate and retrieve employee evaluation certificates with QR code validation'
+---
+
+## Overview
+
+The Certificate API generates official certificates (constancias) that verify an employee has completed the background evaluation process. Certificates include QR codes for third-party validation.
+
+<Note>
+  Certificates are generated with encrypted QR codes that allow external organizations to verify authenticity through the [Validation API](/api/documents/validation).
+</Note>
+
+---
+
+## View Certificate
+
+<RequestExample>
+```bash GET /Constancia/constanciaView/:constanciaValidacion
+curl -X GET https://api.vlife-dgo.com/Constancia/constanciaView/U2FsdGVkX1...
+```
+</RequestExample>
+
+Generates and displays a certificate with QR code for a completed evaluation.
+
+### Endpoint
+
+```
+GET /Constancia/constanciaView/:constanciaValidacion
+```
+
+### Authentication
+
+Requires active user session (authenticated via session middleware).
+
+### Path Parameters
+
+<ParamField path="constanciaValidacion" type="string" required>
+  Encrypted validation string that contains the evaluation ID. This same string is used in the QR code for certificate validation.
+</ParamField>
+
+### Response
+
+Returns an HTML view (`constanciaViews/constanciaView`) displaying the certificate with:
+
+<ResponseField name="user" type="string">
+  Current user's name from session.
+</ResponseField>
+
+<ResponseField name="QR" type="string">
+  Base64-encoded QR code image (Data URL format).
+  
+  ```
+  data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+  ```
+</ResponseField>
+
+<ResponseField name="dataConstancia" type="object">
+  Certificate metadata and validation information.
+  
+  <Expandable title="Certificate Data">
+    <ResponseField name="constanciaID" type="integer">
+      Unique certificate identifier.
+    </ResponseField>
+    
+    <ResponseField name="evalID" type="integer">
+      Associated evaluation ID.
+    </ResponseField>
+    
+    <ResponseField name="constanciaValidacion" type="string">
+      Encrypted validation string for QR code.
+    </ResponseField>
+    
+    <ResponseField name="constanciaCreado" type="datetime">
+      Certificate creation timestamp.
+    </ResponseField>
+    
+    <ResponseField name="constanciaActivo" type="integer">
+      Active status (1 = active, 0 = inactive).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="Empleado" type="object">
+  Employee information displayed on certificate.
+  
+  <Expandable title="Employee Data">
+    <ResponseField name="empNombreCompleto" type="string">
+      Employee's full name.
+    </ResponseField>
+    
+    <ResponseField name="empRFC" type="string">
+      Employee's RFC (tax identifier).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### QR Code Generation
+
+The QR code is generated using the `qrcode` library and contains a validation URL:
+
+```javascript
+import qrcode from 'qrcode';
+
+// Generate validation URL
+const urlValidator = `http://asdfytrfdggfg/constanciaValidator/${constanciaValidacion}`;
+
+// Create QR code as Data URL
+const QR = await qrcode.toDataURL(urlValidator);
+```
+
+**QR Code Properties**:
+- **Format**: PNG image as Data URL
+- **Content**: Full validation URL with encrypted evaluation ID
+- **Purpose**: Allow third parties to verify certificate authenticity
+- **Validation Endpoint**: `/Validator/ConstanciaValidator/:cadena`
+
+### Database Queries
+
+**Get Certificate Data**:
+```sql
+SELECT * FROM tbl_dgo_constancias 
+WHERE evalID = ? AND constanciaActivo = 1
+```
+
+**Get Employee Data**:
+```sql
+SELECT empleados.empNombreCompleto, empleados.empRFC 
+FROM tbl_dgo_evaluaciones evaluaciones
+INNER JOIN cat_dgo_empleados empleados 
+  ON evaluaciones.empID = empleados.empID
+WHERE evaluaciones.evalID = ?
+```
+
+### Decryption Process
+
+The `constanciaValidacion` parameter is decrypted to retrieve the evaluation ID:
+
+```javascript
+import ncrypt from 'ncrypt-js';
+
+const ncryptObjet = new ncrypt(keyDecrypt.key);
+const decryptedData = ncryptObjet.decrypt(constanciaValidacion);
+// decryptedData contains the evalID
+```
+
+### Error Handling
+
+Silent error handling - errors are caught but not displayed to user. The view may render empty or redirect based on error type.
+
+<Warning>
+  The controller has an empty catch block, which means errors are not properly handled or logged.
+</Warning>
+
+---
+
+## Certificate Data Structure
+
+### Certificate Record
+
+Stored in `tbl_dgo_constancias` table:
+
+<ParamField query="constanciaID" type="integer">
+  Auto-increment primary key.
+</ParamField>
+
+<ParamField query="evalID" type="integer">
+  Foreign key to evaluation record.
+</ParamField>
+
+<ParamField query="constanciaValidacion" type="string">
+  Encrypted validation string (ncrypt-js).
+</ParamField>
+
+<ParamField query="constanciaCreado" type="datetime">
+  Timestamp of certificate creation.
+</ParamField>
+
+<ParamField query="constanciaActivo" type="integer">
+  Soft delete flag (1 = active, 0 = deleted).
+</ParamField>
+
+---
+
+## Certificate Validation Workflow
+
+### Generation Process
+
+1. **Evaluation Complete**: Employee completes background evaluation
+2. **Generate Certificate**: System creates certificate record with validation string
+3. **Encrypt ID**: Evaluation ID encrypted using ncrypt-js
+4. **Create QR Code**: QR code generated with validation URL
+5. **Display Certificate**: HTML view rendered with employee data and QR code
+
+### Validation Process
+
+1. **QR Scan**: External party scans QR code on certificate
+2. **URL Redirect**: QR code redirects to validation endpoint
+3. **Decrypt ID**: Server decrypts validation string
+4. **Query Database**: Retrieves certificate and employee data
+5. **Display Validation**: Shows certificate details and authenticity confirmation
+
+See [Document Validation](/api/documents/validation) for details on the validation endpoint.
+
+---
+
+## Certificate Display Format
+
+### Visual Elements
+
+- **Header**: Official CEACC Durango logo and letterhead
+- **Title**: "Constancia de Evaluación" or similar
+- **Employee Name**: Full name prominently displayed
+- **RFC**: Tax identifier for verification
+- **Issuance Date**: Date certificate was generated
+- **QR Code**: Positioned for easy scanning (typically bottom-right)
+- **Validation Text**: Instructions for QR code verification
+- **Official Signature**: Digital or scanned signature of authority
+- **Folio Number**: Certificate identifier for reference
+
+### Print Optimization
+
+The certificate view is designed for printing:
+- Standard letter size (8.5" × 11")
+- Print-friendly styling
+- High-resolution QR code
+- Official color scheme
+
+---
+
+## QR Code Technical Details
+
+### Library
+
+**Package**: `qrcode` (npm)
+
+**Version**: Check package.json in source code
+
+**Documentation**: https://www.npmjs.com/package/qrcode
+
+### Generation Method
+
+```javascript
+await qrcode.toDataURL(urlString)
+```
+
+Returns a Data URL containing a PNG image that can be directly embedded in HTML:
+
+```html
+<img src="{{QR}}" alt="QR Code" />
+```
+
+### QR Code Content
+
+The QR code encodes a full URL:
+
+```
+http://asdfytrfdggfg/constanciaValidator/U2FsdGVkX1+abc123xyz...
+```
+
+**URL Components**:
+- **Protocol**: http:// or https://
+- **Domain**: System domain (appears to be placeholder in code)
+- **Path**: `/constanciaValidator/`
+- **Parameter**: Encrypted evaluation ID
+
+### Security Features
+
+<Info>
+  - **Encryption**: Validation string encrypted with ncrypt-js
+  - **Active Check**: Only active certificates (constanciaActivo = 1) validate
+  - **Database Verification**: QR code links to live database record
+  - **Tamper-Proof**: Any modification to encrypted string breaks validation
+</Info>
+
+---
+
+## Source Code References
+
+### Routes
+
+`ConstanciaRoutes.js:6`
+```javascript
+router.get('/constanciaView/:constanciaValidacion', 
+  ConstanciaController.ConstanciaView)
+```
+
+### Controller
+
+`ConstanciaController.js:6-29`
+
+Key operations:
+1. Decrypt validation parameter
+2. Query certificate data
+3. Query employee data
+4. Generate QR code
+5. Render view
+
+### Models
+
+`ConstanciaModel.js:2-8`
+
+SQL queries for retrieving certificate and employee information.
+
+---
+
+## Integration Example
+
+### Creating a Certificate
+
+While the API doesn't expose a POST endpoint for certificate creation in the provided code, certificates are likely created during the evaluation completion process:
+
+```javascript
+import ncrypt from 'ncrypt-js';
+
+// Encrypt evaluation ID
+const ncryptObjet = new ncrypt(secretKey);
+const encryptedEvalID = ncryptObjet.encrypt(evalID.toString());
+
+// Insert certificate record
+await PoolvLife.query(`
+  INSERT INTO tbl_dgo_constancias 
+  SET evalID = ?, constanciaValidacion = ?, constanciaActivo = 1
+`, [evalID, encryptedEvalID]);
+
+// Redirect to certificate view
+res.redirect(`/Constancia/constanciaView/${encryptedEvalID}`);
+```
+
+### Displaying Certificate
+
+```handlebars
+<!-- In constanciaView.hbs template -->
+<div class="certificate">
+  <h1>Constancia de Evaluación</h1>
+  <p><strong>Nombre:</strong> {{Empleado.empNombreCompleto}}</p>
+  <p><strong>RFC:</strong> {{Empleado.empRFC}}</p>
+  <p><strong>Fecha:</strong> {{formatDate dataConstancia.constanciaCreado}}</p>
+  
+  <div class="qr-code">
+    <img src="{{QR}}" alt="QR de Validación" />
+    <p>Escanee el código QR para validar</p>
+  </div>
+</div>
+```
+
+---
+
+## Use Cases
+
+1. **Official Certification**: Provide employees with proof of completed background check
+2. **Third-Party Verification**: Allow employers to verify certificate authenticity
+3. **Compliance Documentation**: Meet regulatory requirements for background checks
+4. **Digital Records**: Maintain digital certificates alongside paper copies
+5. **Anti-Fraud**: Prevent forged or altered certificates through QR validation
+
+---
+
+## Best Practices
+
+<Check>
+  **Security**
+  - Always use HTTPS in production for validation URLs
+  - Rotate encryption keys periodically
+  - Log validation attempts for audit trail
+  - Implement rate limiting on validation endpoint
+</Check>
+
+<Check>
+  **User Experience**
+  - Provide clear instructions for QR code scanning
+  - Include manual validation option (folio number lookup)
+  - Ensure QR code is high-contrast and scannable
+  - Test QR codes with multiple scanner apps
+</Check>
+
+<Check>
+  **Reliability**
+  - Cache certificate views to reduce database load
+  - Handle expired certificates gracefully
+  - Implement proper error logging
+  - Provide fallback validation methods
+</Check>

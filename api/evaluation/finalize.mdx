@@ -1,0 +1,254 @@
+---
+title: 'Finalize Evaluation'
+description: 'Mark an employee evaluation as complete and finalized'
+---
+
+## Endpoint
+
+```
+POST /evaluacionvLife/FinalizarEvaluacion
+```
+
+## Description
+
+Marks an employee background evaluation as complete and finalized. This endpoint should only be called after all required data sections have been completed and all mandatory documents have been uploaded. Upon successful finalization, the evaluation is recorded in the finalized evaluations table with a timestamp.
+
+## Authentication
+
+This endpoint requires session-based authentication via the `isLoggedIn` middleware. Users must be authenticated before accessing this endpoint.
+
+## Request Parameters
+
+<ParamField body="encryptedData" type="string" required>
+  The encrypted evaluation ID obtained from the [Create Evaluation](/api/evaluation/create) or [View Evaluation](/api/evaluation/view) endpoints. This value is encrypted using `ncrypt-js` with the key `"key_cecc"`.
+</ParamField>
+
+## Prerequisites
+
+Before finalizing an evaluation, ensure all requirements are met based on evaluation type:
+
+### Permanencia (tipo_eval = 1)
+
+<Check>
+  **Data Sections (6 required)**
+  - Personal information completed
+  - Family information completed
+  - Academic background completed
+  - Work history completed
+  - Economic data completed
+  - References completed
+</Check>
+
+<Check>
+  **Required Documents (5 required)**
+  - Birth certificate (Acta de Nacimiento)
+  - Official identification (INE)
+  - Proof of address (Comprobante de Domicilio)
+  - Education certificates (Comprobante de Estudios)
+  - Proof of income (Comprobante de Ingresos)
+</Check>
+
+### Nuevo Ingreso (tipo_eval = 2)
+
+<Check>
+  **Data Sections (6 required)**
+  - Personal information completed
+  - Family information completed
+  - Academic background completed
+  - Work history completed
+  - Economic data completed
+  - References completed
+</Check>
+
+<Check>
+  **Required Documents (7 required)**
+  - Birth certificate (Acta de Nacimiento)
+  - Official identification (INE)
+  - Proof of address (Comprobante de Domicilio)
+  - Education certificates (Comprobante de Estudios)
+  - Military service card (Cartilla Militar)
+  - Proof of income (Comprobante de Ingresos)
+  - Letter of motivation (Motivo de Ingreso)
+  - Credit bureau report (Buró de Crédito)
+</Check>
+
+## How It Works
+
+<Steps>
+  <Step title="Decrypt evaluation ID">
+    The encrypted evaluation ID is decrypted using `ncrypt-js` with the key `"key_cecc"` to obtain the actual `evalID`.
+  </Step>
+  
+  <Step title="Get current timestamp">
+    The system retrieves the current date and time using the `GetDate()` helper function.
+  </Step>
+  
+  <Step title="Record finalization">
+    A new record is inserted into the `tbl_dgo_evalfinalizadas` table containing:
+    - `evalID` - The evaluation identifier
+    - `finalizadoFecha` - The finalization timestamp
+  </Step>
+  
+  <Step title="Redirect to profile">
+    Upon success, the user is redirected to their profile page at `/auth/profile` with a success message.
+  </Step>
+</Steps>
+
+## Response
+
+This endpoint performs a redirect rather than returning JSON data.
+
+### Success Response
+
+**Status Code**: `302 Found`
+
+**Redirect URL**: `/auth/profile`
+
+**Flash Message**: "Evaluación Finalizada"
+
+### Error Response
+
+**Status Code**: `302 Found`
+
+**Redirect URL**: Previous page (using `res.redirect("back")`)
+
+**Flash Message**: "Algo salio mal !"
+
+Errors are also logged to the console for debugging purposes.
+
+## Database Operations
+
+### Query Used
+
+<Expandable title="SaveFinalizado Query">
+```sql
+INSERT INTO tbl_dgo_evalfinalizadas SET ?
+```
+
+The data packet includes:
+- `evalID`: The decrypted evaluation identifier
+- `finalizadoFecha`: The current date/time when finalization occurred
+</Expandable>
+
+## Example Request
+
+```bash
+curl -X POST https://your-domain.com/evaluacionvLife/FinalizarEvaluacion \
+  -H "Content-Type: application/json" \
+  -H "Cookie: connect.sid=your-session-cookie" \
+  -d '{
+    "encryptedData": "U2FsdGVkX1+abc123def456..."
+  }'
+```
+
+## Example Usage Flow
+
+<Steps>
+  <Step title="Complete evaluation">
+    Employee or administrator completes all required data sections and uploads all mandatory documents.
+  </Step>
+  
+  <Step title="Verify completion">
+    The [View Evaluation](/api/evaluation/view) endpoint shows `ListoRevision: true`, indicating the evaluation is ready for finalization.
+  </Step>
+  
+  <Step title="Finalize">
+    Submit the finalize request with the encrypted evaluation ID.
+  </Step>
+  
+  <Step title="Confirmation">
+    User is redirected to their profile with a success message confirming the evaluation is finalized.
+  </Step>
+</Steps>
+
+## Data Packet Structure
+
+```javascript
+const dataPacket = {
+  evalID: 12345,           // Decrypted evaluation ID
+  finalizadoFecha: "2024-03-15 14:30:00"  // Current timestamp
+}
+```
+
+## Important Notes
+
+<Warning>
+  **Validation Before Finalization**
+  
+  While this endpoint does not explicitly validate that all sections are complete, it is the application's responsibility to ensure:
+  - All 6 data sections are completed before allowing finalization
+  - All required documents are uploaded based on evaluation type
+  - The `ListoRevision` flag is `true` in the View Evaluation response
+  
+  Finalizing an incomplete evaluation may cause issues in downstream processes.
+</Warning>
+
+<Warning>
+  **Encryption Key**
+  
+  The encrypted data must be generated using the same encryption key (`"key_cecc"`) and algorithm (`ncrypt-js`) used throughout the application. Invalid encrypted data will cause decryption errors.
+</Warning>
+
+<Info>
+  **Post-Finalization**
+  
+  Once an evaluation is finalized:
+  - A record is created in `tbl_dgo_evalfinalizadas` with the finalization timestamp
+  - The evaluation remains accessible for viewing but should not be modified
+  - The finalization date serves as an audit trail
+</Info>
+
+## Error Scenarios
+
+<AccordionGroup>
+  <Accordion title="Invalid Encrypted Data">
+    **Cause**: The `encryptedData` parameter cannot be decrypted using the key `"key_cecc"`.
+    
+    **Result**: Error logged to console, user redirected back with error message.
+    
+    **Solution**: Ensure the encrypted data is obtained from a valid evaluation creation/view response.
+  </Accordion>
+  
+  <Accordion title="Database Connection Error">
+    **Cause**: Unable to connect to the database or execute the insert query.
+    
+    **Result**: Error logged to console, user redirected back with error message.
+    
+    **Solution**: Check database connectivity and table structure.
+  </Accordion>
+  
+  <Accordion title="Invalid Evaluation ID">
+    **Cause**: The decrypted evaluation ID does not exist in the system.
+    
+    **Result**: Database insert may fail or succeed with invalid reference.
+    
+    **Solution**: Verify the evaluation exists before attempting finalization.
+  </Accordion>
+  
+  <Accordion title="Session Expired">
+    **Cause**: User session is not active or has expired.
+    
+    **Result**: User is redirected to `/auth/signin` by the `isLoggedIn` middleware.
+    
+    **Solution**: User must authenticate again before finalizing.
+  </Accordion>
+</AccordionGroup>
+
+## Related Endpoints
+
+- [Create Evaluation](/api/evaluation/create) - Create or resume an evaluation
+- [View Evaluation](/api/evaluation/view) - Retrieve evaluation data and check completion status
+
+## Security Considerations
+
+<Check>
+  **Session-Based Authentication**: Requires active user session
+</Check>
+
+<Check>
+  **Encrypted Identifiers**: Uses encrypted evaluation IDs to prevent tampering
+</Check>
+
+<Check>
+  **Audit Trail**: Records finalization timestamp for compliance tracking
+</Check>

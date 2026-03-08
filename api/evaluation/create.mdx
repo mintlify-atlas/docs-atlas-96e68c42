@@ -1,0 +1,157 @@
+---
+title: 'Create Evaluation'
+description: 'Create a new employee evaluation or resume an existing evaluation for the current year'
+---
+
+## Endpoint
+
+```
+POST /evaluacionvLife/validityEvaluation
+```
+
+## Description
+
+Creates a new employee background evaluation or resumes an existing one for the current year. The system automatically checks if an active evaluation already exists for the employee in the current year. If found, it redirects to the existing evaluation. Otherwise, it creates a new evaluation and generates an encrypted evaluation ID.
+
+## Authentication
+
+This endpoint requires session-based authentication via the `isLoggedIn` middleware. Users must be authenticated before accessing this endpoint.
+
+## Request Parameters
+
+<ParamField body="tipo_eval" type="integer" required>
+  The type of evaluation to create:
+  - `1` - Permanencia (Permanent employee evaluation)
+  - `2` - Nuevo Ingreso (New hire evaluation)
+</ParamField>
+
+<ParamField body="empID" type="integer" required>
+  The unique identifier of the employee being evaluated.
+</ParamField>
+
+## How It Works
+
+### Evaluation Validation Process
+
+1. **Check for Existing Evaluation**: The system queries for an active evaluation matching:
+   - Employee ID (`empID`)
+   - Current year (`evalAnio`)
+   - Active status (`evalActivo = 1`)
+
+2. **Resume Existing Evaluation**: If an evaluation exists:
+   - Returns the existing evaluation with its encrypted ID
+   - Flash message: "Retomado evaluación ..."
+   - Redirects to the evaluation view
+
+3. **Create New Evaluation**: If no evaluation exists:
+   - Inserts a new evaluation record with `empID`, current year, and `tipo_eval`
+   - Generates encrypted evaluation ID using `ncrypt-js` with key `key_cecc`
+   - Updates the evaluation record with the encrypted ID
+   - Flash message: "Evaluación creada con exito"
+   - Redirects to the evaluation view
+
+### Encryption Details
+
+<Note>
+  The evaluation ID is encrypted using the `ncrypt-js` library with the key `"key_cecc"`. This encrypted value is used throughout the application to securely reference the evaluation in URLs and subsequent API calls.
+</Note>
+
+## Response
+
+This endpoint performs a redirect rather than returning JSON data.
+
+### Success Response
+
+**Status Code**: `302 Found`
+
+**Redirect URL**: `/evaluacionvLife/evaluacionView/{encryptedData}`
+
+**Flash Message**: 
+- "Retomado evaluación ..." (if resuming existing evaluation)
+- "Evaluación creada con exito" (if creating new evaluation)
+
+Where `{encryptedData}` is the encrypted evaluation ID that will be used for all subsequent operations.
+
+### Error Response
+
+Errors are logged to the console. No specific error response is returned to the client.
+
+## Database Operations
+
+### Queries Used
+
+<Expandable title="validityEvaluation Query">
+```sql
+SELECT * FROM tbl_dgo_evaluaciones 
+WHERE empID = ? 
+  AND evalAnio = ?
+  AND evalActivo = 1 
+ORDER BY evalCreado DESC 
+LIMIT 1
+```
+</Expandable>
+
+<Expandable title="createEvaluacion Query">
+```sql
+INSERT INTO tbl_dgo_evaluaciones (empID, evalAnio, tipoEvalID) 
+VALUES (?, ?, ?)
+```
+</Expandable>
+
+<Expandable title="encryptEvaluation Query">
+```sql
+UPDATE tbl_dgo_evaluaciones 
+SET evalEncrypt = ? 
+WHERE evalID = ?
+```
+</Expandable>
+
+## Example Request
+
+```bash
+curl -X POST https://your-domain.com/evaluacionvLife/validityEvaluation \
+  -H "Content-Type: application/json" \
+  -H "Cookie: connect.sid=your-session-cookie" \
+  -d '{
+    "tipo_eval": 1,
+    "empID": 12345
+  }'
+```
+
+## Example Usage Flow
+
+<Steps>
+  <Step title="User initiates evaluation">
+    Employee or administrator submits a request to create an evaluation with the employee ID and evaluation type.
+  </Step>
+  
+  <Step title="System validates">
+    The system checks if an evaluation already exists for the employee in the current year.
+  </Step>
+  
+  <Step title="Create or resume">
+    - If exists: Redirects to existing evaluation
+    - If new: Creates evaluation, encrypts the ID, and redirects to the new evaluation
+  </Step>
+  
+  <Step title="User proceeds">
+    User is redirected to the evaluation view page where they can complete all required sections.
+  </Step>
+</Steps>
+
+## Important Notes
+
+<Warning>
+  - The evaluation year (`evalAnio`) is automatically set to the current year and cannot be specified in the request
+  - Only one active evaluation per employee per year is allowed
+  - The encrypted evaluation ID is critical for all subsequent operations on this evaluation
+</Warning>
+
+<Info>
+  After successful creation or resumption, proceed to [View Evaluation](/api/evaluation/view) to access and complete the evaluation sections.
+</Info>
+
+## Related Endpoints
+
+- [View Evaluation](/api/evaluation/view) - Retrieve full evaluation data
+- [Finalize Evaluation](/api/evaluation/finalize) - Mark evaluation as complete

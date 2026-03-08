@@ -1,0 +1,536 @@
+---
+title: 'Certificate Validation'
+description: 'Learn how vLife DGO generates completion certificates (constancias) with QR code validation for secure verification'
+---
+
+## Overview
+
+vLife DGO generates completion certificates (constancias) for approved evaluations. Each certificate includes a QR code that enables third-party verification of authenticity through a public validation portal.
+
+## Certificate System Architecture
+
+<Steps>
+  <Step title="Evaluation Approval">
+    Administrator approves completed evaluation.
+  </Step>
+  <Step title="Certificate Generation">
+    System creates constancia record with encrypted validation ID.
+  </Step>
+  <Step title="QR Code Creation">
+    QR code is generated linking to validation URL.
+  </Step>
+  <Step title="Certificate Display">
+    Employee can view and download their certificate.
+  </Step>
+  <Step title="Public Validation">
+    Anyone can scan QR code to verify certificate authenticity.
+  </Step>
+</Steps>
+
+## Certificate Generation
+
+### Constancia Data Structure
+
+Certificates are stored in the database with:
+- `evalID` - Links certificate to specific evaluation
+- `constanciaValidacion` - Encrypted validation identifier
+- Certificate issue date
+- Employee information
+- Evaluation results
+
+### Certificate View Controller
+
+```javascript
+import { PoolvLife, keyDecrypt } from "../database/connection.js";
+import ConstanciaModel from "../models/ConstanciaModel.js";
+import ncrypt from "ncrypt-js";
+import qrcode from "qrcode";
+
+const ConstanciaView = async (req, res) => {
+  const { constanciaValidacion } = req.params;
+  
+  try {
+    const ncryptObjet = new ncrypt(keyDecrypt.key);
+    const decryptedData = ncryptObjet.decrypt(constanciaValidacion);
+    
+    // Get certificate data
+    const [GetDataConstancia] = await PoolvLife.query(
+      ConstanciaModel.GetDataConstancia,
+      decryptedData
+    );
+    
+    // Get employee data
+    const [GetDataEmpleado] = await PoolvLife.query(
+      ConstanciaModel.GetDataEmpleado,
+      decryptedData
+    );
+    
+    // Generate QR code
+    const getCadena = constanciaValidacion;
+    const urlValidator = `http://asdfytrfdggfg/constanciaValidator/${getCadena}`;
+    const QR = await qrcode.toDataURL(urlValidator);
+    
+    res.render("constanciaViews/constanciaView", {
+      user: req.session.name,
+      QR,
+      dataConstancia: GetDataConstancia[0],
+      Empleado: GetDataEmpleado[0],
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+```
+
+<Info>
+  The certificate uses the same encrypted ID system as evaluations, ensuring secure access to certificate data.
+</Info>
+
+## QR Code Generation
+
+### QR Code Library
+
+vLife DGO uses the `qrcode` npm package to generate QR codes:
+
+```javascript
+import qrcode from "qrcode";
+
+const getCadena = constanciaValidacion; // Encrypted validation ID
+const urlValidator = `http://asdfytrfdggfg/constanciaValidator/${getCadena}`;
+const QR = await qrcode.toDataURL(urlValidator);
+```
+
+### QR Code Output
+
+The `toDataURL()` method returns a base64-encoded image:
+
+```html
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..." alt="QR Code" />
+```
+
+This can be directly embedded in HTML templates.
+
+<Warning>
+  The validation URL in the code (`http://asdfytrfdggfg/constanciaValidator/`) appears to be a placeholder. This must be updated to the actual production domain before deployment.
+</Warning>
+
+## Certificate Contents
+
+### Employee Information
+
+From `GetDataEmpleado`:
+- Full name
+- RFC (tax ID)
+- CURP (national ID)
+- Government dependency/department
+- Position
+- Employee number
+
+### Certificate Data
+
+From `GetDataConstancia`:
+- Evaluation year
+- Evaluation type (Permanencia or Nuevo Ingreso)
+- Completion date
+- Approval date
+- Certificate issue date
+- Unique certificate number
+- Validation ID (encrypted)
+
+## Validation System
+
+### Public Validation Portal
+
+Anyone can validate a certificate by scanning the QR code or entering the validation URL:
+
+```javascript
+import { PoolvLife, keyDecrypt } from "../database/connection.js";
+import ConstanciaValidatorModel from "../models/ConstanciaValidatorModel.js";
+import ncrypt from "ncrypt-js";
+
+const ConstanciaValidator = async (req, res) => {
+  const { cadena } = req.params;
+  
+  try {
+    const ncryptObjet = new ncrypt(keyDecrypt.key);
+    const decryptedData = ncryptObjet.decrypt(cadena);
+    
+    const [rows] = await PoolvLife.query(
+      ConstanciaValidatorModel.GetDataConstancia,
+      [decryptedData]
+    );
+    
+    res.render("constanciaViews/constanciaValidatorView", {
+      Employee: rows[0],
+    });
+  } catch (e) {
+    console.log(e);
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+### Validation Flow
+
+<Steps>
+  <Step title="Scan or Access QR Code">
+    User scans QR code or accesses validation URL.
+  </Step>
+  <Step title="Decrypt Validation ID">
+    Server decrypts the validation identifier.
+  </Step>
+  <Step title="Query Certificate Data">
+    System retrieves certificate information from database.
+  </Step>
+  <Step title="Display Verification">
+    Public page displays employee name, certificate details, and validity status.
+  </Step>
+</Steps>
+
+<Info>
+  The validation portal is public and does not require authentication, allowing employers and third parties to verify certificate authenticity.
+</Info>
+
+## Security Features
+
+### Encrypted Validation IDs
+
+Certificates use `ncrypt-js` encryption:
+
+```javascript
+const ncryptObjet = new ncrypt(keyDecrypt.key);
+const decryptedData = ncryptObjet.decrypt(constanciaValidacion);
+```
+
+This prevents:
+- Direct database ID exposure
+- Certificate enumeration attacks
+- Unauthorized access to certificate data
+
+### Validation Protection
+
+<CardGroup cols={2}>
+  <Card title="Unique Identifiers" icon="fingerprint">
+    Each certificate has a unique encrypted validation ID
+  </Card>
+  <Card title="Database Verification" icon="database">
+    All validations query the database for current certificate status
+  </Card>
+  <Card title="Immutable QR Codes" icon="lock">
+    QR codes cannot be forged as they link to server-validated data
+  </Card>
+  <Card title="Public Transparency" icon="eye">
+    Anyone can verify certificate authenticity
+  </Card>
+</CardGroup>
+
+## Certificate Access Control
+
+### Employee Access
+
+Employees access their certificate through their profile:
+
+```javascript
+// In AuthController profile view
+const [GetConstancia] = await PoolvLife.query(
+  AuthModel.GetConstancia,
+  evalID
+);
+
+res.render("profile", {
+  user: req.session.name,
+  constancia: GetConstancia[0],
+  // ... other profile data
+});
+```
+
+Certificate link appears only when:
+- Evaluation is completed and finalized
+- Administrator has approved the evaluation
+- Certificate record has been created
+
+### Validation Access
+
+Validation portal is public:
+- No authentication required
+- Accessible via QR code scan
+- Direct URL access with validation ID
+
+## Certificate Display
+
+### Certificate View Template
+
+The certificate is rendered with:
+- Official CEACC Durango header
+- Employee photograph (if available)
+- Complete employee information
+- Evaluation details
+- QR code for validation
+- Digital signatures (if configured)
+- Certificate issue date and number
+
+### QR Code Placement
+
+```handlebars
+<div class="qr-code-section">
+  <img src="{{QR}}" alt="Código QR de Validación" />
+  <p>Escanea para validar</p>
+</div>
+```
+
+<Note>
+  The QR code is typically placed in a prominent location on the certificate, often in the bottom right corner or as a footer element.
+</Note>
+
+## Validation URL Structure
+
+### Certificate URL (Employee View)
+
+```
+http://localhost:4001/Constancia/{constanciaValidacion}
+```
+
+- Requires authentication (employee must be logged in)
+- Shows full certificate with download options
+- Includes QR code for sharing
+
+### Validation URL (Public View)
+
+```
+http://asdfytrfdggfg/constanciaValidator/{constanciaValidacion}
+```
+
+- No authentication required
+- Public verification portal
+- Displays basic certificate validity information
+- Shows employee name and certificate status
+
+<Warning>
+  The validation URL domain must be updated for production:
+  
+  ```javascript
+  const VALIDATION_URL = process.env.VALIDATION_URL || 'https://ceacc.durango.gob.mx';
+  const urlValidator = `${VALIDATION_URL}/constanciaValidator/${getCadena}`;
+  ```
+</Warning>
+
+## QR Code Customization
+
+### QR Code Options
+
+The `qrcode` library supports various options:
+
+```javascript
+const QR = await qrcode.toDataURL(urlValidator, {
+  errorCorrectionLevel: 'H', // High error correction
+  type: 'image/png',
+  quality: 0.95,
+  margin: 1,
+  color: {
+    dark: '#000000',
+    light: '#FFFFFF'
+  },
+  width: 300  // Size in pixels
+});
+```
+
+### Error Correction Levels
+
+| Level | Error Tolerance | Use Case |
+|-------|----------------|----------|
+| L | ~7% | Basic QR codes |
+| M | ~15% | Standard use (default) |
+| Q | ~25% | Printed materials |
+| H | ~30% | Small or damaged codes |
+
+<Info>
+  For certificates that will be printed and potentially worn or damaged, use error correction level 'H' or 'Q'.
+</Info>
+
+## Certificate Lifecycle
+
+### Creation Trigger
+
+Certificates are typically created when:
+1. Employee completes all evaluation requirements
+2. Employee finalizes their evaluation
+3. Administrator reviews and approves evaluation
+4. System generates certificate record
+
+### Certificate Status
+
+Certificates can have various states:
+- **Active** - Valid and verifiable
+- **Revoked** - No longer valid (requires implementation)
+- **Expired** - Past validity period (if time-limited)
+
+<Note>
+  The current implementation doesn't show explicit revocation logic. Consider adding certificate status field and expiration dates for enhanced control.
+</Note>
+
+## Validation Display
+
+### Verified Certificate Display
+
+When a valid certificate is scanned:
+
+```handlebars
+<div class="validation-success">
+  <h2>Certificado Válido</h2>
+  <div class="employee-info">
+    <p><strong>Nombre:</strong> {{Employee.empNombreCompleto}}</p>
+    <p><strong>RFC:</strong> {{Employee.empRFC}}</p>
+    <p><strong>Dependencia:</strong> {{Employee.empDependencia}}</p>
+    <p><strong>Año de Evaluación:</strong> {{Employee.evalAnio}}</p>
+    <p><strong>Tipo:</strong> {{Employee.tipoEval}}</p>
+  </div>
+  <p class="verification-date">Verificado: {{currentDate}}</p>
+</div>
+```
+
+### Invalid Certificate Display
+
+For invalid or tampered certificates:
+
+```handlebars
+<div class="validation-error">
+  <h2>Certificado No Válido</h2>
+  <p>Este código no corresponde a un certificado válido.</p>
+  <p>Si cree que esto es un error, contacte a CEACC Durango.</p>
+</div>
+```
+
+## Certificate Printing
+
+### Print-Friendly Styling
+
+Certificates should include print-optimized CSS:
+
+```css
+@media print {
+  .no-print {
+    display: none;
+  }
+  
+  .certificate {
+    width: 100%;
+    max-width: 210mm; /* A4 width */
+    margin: 0 auto;
+  }
+  
+  .qr-code {
+    width: 3cm;
+    height: 3cm;
+  }
+  
+  /* Force page breaks */
+  .page-break {
+    page-break-after: always;
+  }
+}
+```
+
+### Download Options
+
+Consider implementing:
+- PDF download (similar to expediente generation)
+- High-resolution image export
+- Print-optimized HTML view
+
+## Security Considerations
+
+<Warning>
+  **Important Security Measures:**
+  
+  1. **HTTPS Required**: QR codes should link to HTTPS URLs only
+  2. **Rate Limiting**: Implement rate limiting on validation endpoint to prevent abuse
+  3. **Logging**: Log all validation attempts for audit trail
+  4. **Revocation System**: Implement certificate revocation capability
+  5. **Expiration Dates**: Consider time-limited certificates
+  6. **Watermarks**: Add visual security features to printed certificates
+  7. **Access Logging**: Track who views certificates and when
+</Warning>
+
+## Integration with Profile
+
+Certificates appear in the employee profile:
+
+```javascript
+const profile = async (req, res) => {
+  try {
+    const usrId = req.session.usrId;
+    const anio = new Date().getFullYear();
+    
+    const [currentEvaluation] = await PoolvLife.query(
+      AuthModel.getLastEvaluation,
+      [anio, usrId]
+    );
+    
+    if (currentEvaluation.length > 0) {
+      const evalID = currentEvaluation[0].evalID;
+      
+      // Get certificate if exists
+      const [GetConstancia] = await PoolvLife.query(
+        AuthModel.GetConstancia,
+        evalID
+      );
+      
+      res.render("profile", {
+        user: req.session.name,
+        currentEval: currentEvaluation[0],
+        constancia: GetConstancia[0], // May be undefined if not yet issued
+      });
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};
+```
+
+## Production Deployment Checklist
+
+<Steps>
+  <Step title="Update Validation URL">
+    Replace placeholder URL with production domain.
+  </Step>
+  <Step title="Configure HTTPS">
+    Ensure all URLs use HTTPS protocol.
+  </Step>
+  <Step title="Implement Rate Limiting">
+    Protect validation endpoint from abuse.
+  </Step>
+  <Step title="Add Logging">
+    Track validation attempts and certificate views.
+  </Step>
+  <Step title="Test QR Codes">
+    Verify QR codes work on various devices and scanners.
+  </Step>
+  <Step title="Configure Error Correction">
+    Set appropriate QR code error correction level.
+  </Step>
+  <Step title="Add Revocation System">
+    Implement ability to revoke certificates.
+  </Step>
+  <Step title="Design Certificate Layout">
+    Finalize official certificate design and branding.
+  </Step>
+</Steps>
+
+## Related Files
+
+- **ConstanciaController.js** (`src/controllers/ConstanciaController.js:1`) - Certificate viewing
+- **ConstanciaValidatorController.js** (`src/controllers/ConstanciaValidatorController.js:1`) - Public validation
+- **ConstanciaModel.js** - Database queries for certificates
+- **AuthController.js** (`src/controllers/AuthController.js:151`) - Profile integration
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="lock" href="/features/authentication">
+    Review the authentication system
+  </Card>
+  <Card title="Expediente Generation" icon="file-pdf" href="/features/expediente-generation">
+    Generate complete evaluation PDFs
+  </Card>
+</CardGroup>

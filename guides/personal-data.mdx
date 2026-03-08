@@ -1,0 +1,354 @@
+---
+title: Personal Data
+description: Complete your personal information, contact details, and residential address
+---
+
+## Overview
+
+The Personal Data section is the first of six data sections you need to complete. This section captures your basic personal information, contact details, residential address, and social media profiles.
+
+<Info>
+This is typically the first section you should complete, as some information here may be referenced in other sections.
+</Info>
+
+## Accessing Personal Data Form
+
+From your evaluation dashboard, click on the **Personal Data** (Datos Personales) section. You'll be directed to:
+
+```
+/captureData/personalesCapture/[encrypted_evaluation_id]
+```
+
+## Before You Begin
+
+Gather the following information:
+
+<AccordionGroup>
+  <Accordion title="Personal Information">
+    - Full legal name
+    - Date of birth
+    - Place of birth
+    - Nationality
+    - Gender
+    - Marital status
+    - Age
+    - Education level
+    - RFC (with homoclave)
+    - CURP
+  </Accordion>
+
+  <Accordion title="Contact Information">
+    - Home phone (landline)
+    - Mobile phone
+    - Office phone and extension
+    - Alternative contact phone
+    - Name of person for alternative contact
+    - Email address
+  </Accordion>
+
+  <Accordion title="Residential Address">
+    - Street name and number
+    - Neighborhood/Colony
+    - Postal code
+    - City/Locality
+    - State
+    - Cross streets (for reference)
+    - Years at current residence
+    - Number of people living in household
+    - Description of home facade
+    - Google Maps link (optional)
+  </Accordion>
+
+  <Accordion title="Social Media (Optional)">
+    - Facebook profile
+    - Twitter/X handle
+    - Instagram account
+    - Other social media accounts
+  </Accordion>
+</AccordionGroup>
+
+## Completing the Personal Data Form
+
+<Steps>
+  <Step title="Basic Personal Information">
+    Fill in the following fields:
+
+    **Nombre Completo** (`personalesNombre`)
+    - Your full legal name
+    - Must match official documents
+
+    **Fecha de Nacimiento** (`personalesFechaNac`)
+    - Date format: YYYY-MM-DD or as shown in form
+
+    **Lugar de Nacimiento** (`personalesLugarNac`)
+    - City and state where you were born
+    - Example: "Durango, Durango"
+
+    **Nacionalidad** (`personalesNacionalidad`)
+    - Usually "Mexicana" or "Mexicano"
+
+    **Sexo** (`personalesSexo`)
+    - Must match your registration
+
+    **Estado Civil** (`personalesEdoCivil`)
+    - Soltero/a, Casado/a, Divorciado/a, Viudo/a, Unión Libre
+
+    **Edad** (`personalesEdad`)
+    - Your current age in years
+
+    **Escolaridad** (`personalesEscolaridad`)
+    - Your highest level of education completed
+  </Step>
+
+  <Step title="Official Identification Numbers">
+    **RFC** (`personalesRFC`)
+    - Your RFC with homoclave (13 characters)
+    - Should match your registration RFC
+
+    **CURP** (`personalesCURP`)
+    - Your 18-character CURP
+    - Must be valid and match your name/birthdate
+  </Step>
+
+  <Step title="Contact Information">
+    **Teléfono Fijo** (`personalesTelFijo`)
+    - Home landline phone number
+    - Include area code
+    - Can be left empty if you don't have one
+
+    **Teléfono Celular** (`personalesTelCelular`)
+    - Your primary mobile phone
+    - Must be reachable for verification
+
+    **Teléfono Oficina** (`personalesTelOficina`)
+    - Your work phone number
+
+    **Extensión** (`personalesExt`)
+    - Office phone extension if applicable
+
+    **Teléfono de Recados** (`personalesTelRecados`)
+    - Alternative contact phone number
+    - For someone who can reach you
+
+    **Persona de Recados** (`personalesPersonaRecados`)
+    - Name of the person at the alternate contact number
+    - Their relationship to you
+
+    **Correo Electrónico** (`personalesEmail`)
+    - Your email address
+    - Can be the same as your login username
+  </Step>
+
+  <Step title="Residential Address">
+    **Calle y Número** (`personalesCalleNum`)
+    - Full street address with house/apartment number
+    - Example: "Av. Francisco Villa #123"
+
+    **Colonia** (`personalesColonia`)
+    - Neighborhood or colony name
+
+    **Código Postal** (`personalesCP`)
+    - 5-digit postal code
+
+    **Localidad** (`personalesLocalidad`)
+    - City or locality name
+
+    **Estado** (`personalesEstado`)
+    - State name
+    - Example: "Durango"
+
+    **Años en Domicilio** (`personalesAnioDom`)
+    - How many years you've lived at this address
+    - Whole number (e.g., "5" for 5 years)
+
+    **Personas que Habitan** (`personalesPersonasHab`)
+    - Total number of people living in the household
+    - Include yourself in the count
+
+    **Entre Calles** (`personalesEntreCalles`)
+    - Cross streets for reference
+    - Example: "Entre Calle Juárez y Calle Hidalgo"
+
+    **Descripción de Fachada** (`personalesFachada`)
+    - Describe your home's exterior
+    - Color, material, distinctive features
+    - Example: "Casa de dos pisos, color blanco, portón negro"
+
+    **Google Maps** (`personalesGoogle`)
+    - Optional: Paste a Google Maps link to your address
+    - Helps investigators locate your residence
+  </Step>
+
+  <Step title="Save Personal Information">
+    Click the save button to store your personal data.
+
+    The system will:
+    - Validate required fields
+    - Save data to `tbl_dgo_personales` table
+    - Show success message: **"Datos personales guardados, captura redes sociales"**
+    - Keep you on the same page to add social media
+  </Step>
+
+  <Step title="Add Social Media Profiles (Optional)">
+    After saving personal data, you can add social media accounts:
+
+    **Tipo de Red** (`redesTipoRed`)
+    - Select the social media platform
+    - Options: Facebook, Twitter, Instagram, etc.
+
+    **Usuario** (`redesUsuario`)
+    - Your username or profile URL on that platform
+
+    Click save to add each social media account.
+
+    <Info>
+    You can add multiple social media accounts by repeating this process. Each account is saved separately in the `tbl_dgo_redes_sociales` table.
+    </Info>
+  </Step>
+</Steps>
+
+## Editing Personal Data
+
+If you need to update your information:
+
+1. Return to the Personal Data section from your evaluation dashboard
+2. The form will be pre-populated with your existing data
+3. Make your changes
+4. Click the update button
+5. Success message: **"Datos personales actualizados"**
+
+<Warning>
+Changing your RFC or CURP may cause validation issues. These should match your official documents exactly.
+</Warning>
+
+## Managing Social Media Profiles
+
+### Adding More Profiles
+
+You can add as many social media accounts as needed:
+1. Select the platform type
+2. Enter your username
+3. Click save
+4. Repeat for other platforms
+
+### Deleting Profiles
+
+To remove a social media account:
+1. Find the profile in your list
+2. Click the delete button
+3. Confirm deletion
+4. Success message: **"Red social borrada"**
+
+## Deleting All Personal Data
+
+From the evaluation dashboard, you can delete your entire Personal Data section:
+
+1. Look for the delete option in Personal Data
+2. Confirm you want to delete
+3. All personal data and social media profiles will be removed
+4. Success message: **"Datos personales eliminados"**
+5. You'll need to re-enter everything from scratch
+
+<Warning>
+This action cannot be undone. All personal data including social media profiles will be permanently deleted.
+</Warning>
+
+## Validation Tips
+
+### Common Mistakes to Avoid
+
+<AccordionGroup>
+  <Accordion title="RFC Format Errors">
+    **Incorrect:** ABCD850101 (missing homoclave)
+    
+    **Correct:** ABCD850101XYZ (13 characters total)
+  </Accordion>
+
+  <Accordion title="CURP Errors">
+    **Incorrect:** ABCD850101HDFXYZ01 (17 characters)
+    
+    **Correct:** ABCD850101HDFXYZ012 (18 characters)
+  </Accordion>
+
+  <Accordion title="Phone Number Format">
+    Include area codes:
+    - Mobile: 618-123-4567 or 6181234567
+    - Landline: 618-123-4567
+  </Accordion>
+
+  <Accordion title="Address Details">
+    Be specific:
+    - Good: "Calle Constitución #456, Interior 3"
+    - Too vague: "Centro"
+  </Accordion>
+</AccordionGroup>
+
+### Required vs Optional Fields
+
+**Required Fields:**
+- All basic personal information (name, birth date, etc.)
+- RFC and CURP
+- Mobile phone
+- Email
+- Complete residential address
+
+**Optional Fields:**
+- Home phone (landline)
+- Office phone and extension
+- Alternative contact phone
+- Google Maps link
+- Social media profiles
+
+## What Happens Next
+
+After completing the Personal Data section:
+
+1. Your evaluation progress increases to approximately 16.67% (1 of 6 sections)
+2. Return to your evaluation dashboard
+3. The Personal Data section will show as complete ✓
+4. Proceed to the next section: Family Data
+
+<Card title="Next: Family Data" icon="users" href="/guides/family-data">
+  Continue to the Family Data section to add information about your family members
+</Card>
+
+## Field Reference
+
+Complete list of fields in the Personal Data section:
+
+| Field Name | Database Column | Type | Required |
+|------------|-----------------|------|----------|
+| Nombre Completo | `personalesNombre` | text | Yes |
+| Fecha de Nacimiento | `personalesFechaNac` | date | Yes |
+| Lugar de Nacimiento | `personalesLugarNac` | text | Yes |
+| Nacionalidad | `personalesNacionalidad` | text | Yes |
+| Sexo | `personalesSexo` | text | Yes |
+| Estado Civil | `personalesEdoCivil` | text | Yes |
+| Edad | `personalesEdad` | number | Yes |
+| Escolaridad | `personalesEscolaridad` | text | Yes |
+| RFC | `personalesRFC` | text | Yes |
+| CURP | `personalesCURP` | text | Yes |
+| Teléfono Fijo | `personalesTelFijo` | text | No |
+| Teléfono Celular | `personalesTelCelular` | text | Yes |
+| Teléfono Oficina | `personalesTelOficina` | text | No |
+| Extensión | `personalesExt` | text | No |
+| Teléfono Recados | `personalesTelRecados` | text | No |
+| Persona Recados | `personalesPersonaRecados` | text | No |
+| Email | `personalesEmail` | text | Yes |
+| Calle y Número | `personalesCalleNum` | text | Yes |
+| Colonia | `personalesColonia` | text | Yes |
+| Código Postal | `personalesCP` | text | Yes |
+| Localidad | `personalesLocalidad` | text | Yes |
+| Estado | `personalesEstado` | text | Yes |
+| Años en Domicilio | `personalesAnioDom` | number | Yes |
+| Personas que Habitan | `personalesPersonasHab` | number | Yes |
+| Entre Calles | `personalesEntreCalles` | text | Yes |
+| Fachada | `personalesFachada` | text | Yes |
+| Google Maps | `personalesGoogle` | text | No |
+
+### Social Media Fields
+
+| Field Name | Database Column | Type |
+|------------|-----------------|------|
+| Tipo de Red | `redesTipoRed` | text |
+| Usuario | `redesUsuario` | text |

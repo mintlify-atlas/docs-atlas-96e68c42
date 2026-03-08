@@ -1,0 +1,103 @@
+---
+title: 'Sign In'
+description: 'Authenticate a user and create a session'
+---
+
+## POST /auth/userValidator
+
+Authenticates an employee user with username and password. Upon successful authentication, creates a server-side session and redirects to the user profile.
+
+### Request Body
+
+<ParamField body="empUsuario" type="string" required>
+  Employee username for authentication
+</ParamField>
+
+<ParamField body="empContrasenia" type="string" required>
+  Employee password (plain text - will be compared against bcrypt hash)
+</ParamField>
+
+### Authentication Flow
+
+1. System queries database for user by username (`empUsuario`)
+2. Checks if user account is active (`empActivo = 1`)
+3. Compares provided password against stored bcrypt hash using `bcrypt.compare()`
+4. On success, creates session with user data:
+   - `req.session.loggedin = true`
+   - `req.session.name` - Employee full name
+   - `req.session.usrId` - Employee ID
+5. Redirects to `/auth/profile`
+
+### Success Response
+
+On successful authentication:
+- **HTTP Status:** 302 (Redirect)
+- **Location:** `/auth/profile`
+- **Session Created:** Yes
+- **Flash Message:** "Nuevo inicio de sesión !"
+
+```json
+{
+  "session": {
+    "loggedin": true,
+    "name": "Juan Pérez García",
+    "usrId": 123
+  }
+}
+```
+
+### Error Responses
+
+<ResponseField name="User Not Found" type="error">
+  When username doesn't exist or account is inactive
+  - **Flash Message:** "Usuario no valido"
+  - **Action:** Redirects back to signin page
+</ResponseField>
+
+<ResponseField name="Invalid Password" type="error">
+  When password doesn't match stored hash
+  - **Flash Message:** "Usuario no valido"
+  - **Action:** Redirects back to signin page
+</ResponseField>
+
+### Example Request
+
+```bash cURL
+curl -X POST https://api.vlife-dgo.ceacc.gob.mx/auth/userValidator \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "empUsuario=juan.perez" \
+  -d "empContrasenia=SecurePass123"
+```
+
+```javascript JavaScript
+const response = await fetch('/auth/userValidator', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+  body: new URLSearchParams({
+    empUsuario: 'juan.perez',
+    empContrasenia: 'SecurePass123'
+  })
+});
+```
+
+### Security Notes
+
+<Warning>
+  Passwords are transmitted in plain text but immediately compared against bcrypt hashes (saltRounds: 10). Ensure HTTPS is used in production.
+</Warning>
+
+<Info>
+  Only active users (`empActivo = 1`) can authenticate. Inactive accounts will receive the same error message as invalid credentials to prevent user enumeration.
+</Info>
+
+### Database Query
+
+The endpoint executes the following query:
+
+```sql
+SELECT * FROM cat_dgo_empleados 
+WHERE empUsuario = ? AND empActivo = 1 
+LIMIT 1
+```

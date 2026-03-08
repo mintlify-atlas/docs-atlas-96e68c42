@@ -1,0 +1,484 @@
+---
+title: 'Document Upload'
+description: 'Learn how vLife DGO handles document uploads with Multer, including file size limits, UUID naming, and storage organization'
+---
+
+## Overview
+
+vLife DGO uses **Multer** for handling file uploads with a 20MB file size limit. Documents are stored with UUID-based filenames for security and organization. Different evaluation types require different sets of documents.
+
+## Multer Configuration
+
+### Storage Setup
+
+Documents are stored in the `public/uploads` directory with UUID-based naming:
+
+```javascript
+import multer from "multer";
+import { v4 as uuidv4 } from 'uuid';
+import * as path from "path";
+
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, 'public/uploads'),
+  filename: (req, file, cb) => {
+    const fecha = new Date();
+    const mes = fecha.getMonth() + 1;
+    const dia = fecha.getDay();
+    cb(null, uuidv4() + dia + mes + '.pdf');
+  }
+});
+```
+
+<Info>
+  UUID (Universally Unique Identifier) ensures each uploaded file has a unique name, preventing conflicts and enhancing security.
+</Info>
+
+### File Size Limit
+
+A 20MB limit is enforced with custom error handling:
+
+```javascript
+const fileSizeLimitErrorHandler = (err, req, res, next) => {
+  if (err) {
+    req.flash('message', 'El archivo excede los 20MB');
+    res.redirect('back');
+  } else {
+    next();
+  }
+};
+
+app.use(multer({
+  storage: storage,
+  limits: { fileSize: 20000000 },
+}).single('file'), fileSizeLimitErrorHandler);
+```
+
+<Warning>
+  The 20MB limit (20,000,000 bytes) is a hard limit. Files exceeding this size will be rejected with an error message.
+</Warning>
+
+## Document Requirements by Evaluation Type
+
+### Permanencia (tipo_eval = 1)
+
+**Mandatory Documents (5):**
+
+| Document ID | Document Name | Description |
+|-------------|---------------|-------------|
+| 1 | Acta de Nacimiento | Birth certificate |
+| 2 | INE | Official identification |
+| 3 | Comprobante de Domicilio | Proof of residence |
+| 4 | Comprobante de Estudios | Educational certificates |
+| 5 | Comprobante de Ingresos | Proof of income |
+
+**Optional Documents:**
+
+| Document ID | Document Name | Description |
+|-------------|---------------|-------------|
+| 6 | Estado de Cuenta Bancaria | Bank statements |
+| 7 | Cartilla Militar | Military service card |
+| 8 | Reporte de Crédito | Credit report |
+| 9 | Cuenta Departamental | Departmental accounts |
+| 10 | Comprobante Pago Pareja | Spouse payment proof |
+| 11 | Fotografía Fachada | Property facade photo |
+| 12 | Documentos de Inmuebles | Real estate documents |
+| 13 | Licencia Portación de Arma | Weapon carrying license |
+| 14 | Tarjeta de Circulación | Vehicle registration |
+| 15 | Procedimientos Legales | Legal proceedings |
+| 16 | Actividades Informales | Informal activities |
+
+### Nuevo Ingreso (tipo_eval = 2)
+
+**Mandatory Documents (6):**
+
+| Document ID | Document Name | Description |
+|-------------|---------------|-------------|
+| 1 | Acta de Nacimiento | Birth certificate |
+| 2 | INE | Official identification |
+| 3 | Comprobante de Domicilio | Proof of residence |
+| 4 | Comprobante de Estudios | Educational certificates |
+| 5 | Cartilla Militar | Military service card |
+| - | Motivo de Ingreso | Reason for joining (text field) |
+
+<Note>
+  The "Motivo de Ingreso" is captured as text rather than an uploaded document, but counts toward completion requirements.
+</Note>
+
+## Upload Process
+
+### File Upload Flow
+
+<Steps>
+  <Step title="Navigate to Upload View">
+    User selects which document to upload from evaluation dashboard.
+  </Step>
+  <Step title="Select File">
+    User chooses PDF file from their device (max 20MB).
+  </Step>
+  <Step title="Upload and Process">
+    Multer handles the upload, generates UUID filename, and stores in uploads directory.
+  </Step>
+  <Step title="Save to Database">
+    File reference is saved to database linked to evaluation and document type.
+  </Step>
+  <Step title="Return to Evaluation">
+    User is redirected back to evaluation view with success message.
+  </Step>
+</Steps>
+
+### Upload View Controller
+
+```javascript
+import ncrypt from "ncrypt-js";
+import { PoolvLife, keyDecrypt } from "../database/connection.js";
+
+const FileUploadView = async (req, res) => {
+  const { documentoID, enctyptedData } = req.params;
+  
+  try {
+    const ncryptObjet = new ncrypt(keyDecrypt.key);
+    const decryptedData = ncryptObjet.decrypt(enctyptedData);
+    
+    // Get document information
+    const [GetDocument] = await PoolvLife.query(
+      FileUploadModel.GetDocument,
+      documentoID
+    );
+    
+    const numLeyenda = parseInt(documentoID);
+    
+    res.render("fileUpload/fileUploadView", {
+      user: req.session.name,
+      enctyptedData,
+      decryptedData,
+      documentoID,
+      InfoDocument: GetDocument[0],
+      numLeyenda
+    });
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+### Upload Handler
+
+```javascript
+const UploadFile = async (req, res) => {
+  const { evalID, documentoID, enctyptedData } = req.body;
+  const uploadFileName = req.file["filename"];
+  
+  const dataPacket = { evalID, documentoID, uploadFileName };
+  
+  try {
+    await PoolvLife.query(FileUploadModel.SaveDocument, [dataPacket]);
+    req.flash("success", "Documento cargado con exito");
+    res.redirect(`/evaluacionvLife/evaluacionView/${enctyptedData}`);
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+    console.log(e);
+  }
+};
+```
+
+<Info>
+  The uploaded filename is generated by Multer and accessed via `req.file["filename"]`. This filename is stored in the database for later retrieval.
+</Info>
+
+## File Naming Convention
+
+### UUID-Based Naming
+
+Each uploaded file receives a unique name:
+
+```javascript
+filename: (req, file, cb) => {
+  const fecha = new Date();
+  const mes = fecha.getMonth() + 1;  // Month (1-12)
+  const dia = fecha.getDay();         // Day of week (0-6)
+  cb(null, uuidv4() + dia + mes + '.pdf');
+}
+```
+
+**Example filename:**
+```
+a8f5e3c2-6d4b-4a1c-9e8f-2b5c7d9e1f3a25.pdf
+```
+
+Breakdown:
+- `a8f5e3c2-6d4b-4a1c-9e8f-2b5c7d9e1f3a` - UUID
+- `2` - Day of week
+- `5` - Month
+- `.pdf` - Extension
+
+<Warning>
+  The naming convention uses day of week (0-6) rather than day of month. This is a potential area for improvement to use full date information.
+</Warning>
+
+## Storage Organization
+
+### Directory Structure
+
+```
+project-root/
+└── src/
+    └── public/
+        └── uploads/
+            ├── a8f5e3c2-6d4b-4a1c-9e8f-2b5c7d9e1f3a25.pdf
+            ├── b9e6f4d3-7e5c-5b2d-af9g-3c6d8e0f2g4b36.pdf
+            └── ...
+```
+
+All uploaded documents are stored in a single directory. The database maintains the relationship between files and evaluations.
+
+### Database Storage
+
+The database stores:
+- `evalID` - Links file to specific evaluation
+- `documentoID` - Identifies document type
+- `uploadFileName` - UUID-based filename
+- `uploadID` - Unique identifier for the upload record
+
+## Document Validation
+
+### Required vs Optional
+
+The evaluation view checks for required documents:
+
+```javascript
+// For Permanencia
+const ActaPerma = GetActaPerma.length;
+const InePerma = GetINEPerma.length;
+const DomicilioPerma = GetDomicilioPerma.length;
+const EstudiosPerma = GetEstudiosPerma.length;
+const IngresosPerma = GetIngresosPerma.length;
+
+const TotalCargaPerma = ActaPerma + InePerma + DomicilioPerma + 
+                         EstudiosPerma + IngresosPerma;
+
+if (TotalCargaPerma === 5) {
+  // All required documents uploaded
+}
+```
+
+### Completion Check
+
+For evaluation finalization:
+
+<Tabs>
+  <Tab title="Permanencia">
+    ```javascript
+    if (TotalCaptura === 6 && TotalCargaPerma === 5) {
+      const ListoRevision = true;
+      // Ready for review
+    }
+    ```
+    Requires 6 data sections + 5 mandatory documents
+  </Tab>
+  <Tab title="Nuevo Ingreso">
+    ```javascript
+    if (TotalCaptura === 6 && TotalCargaNI === 6) {
+      const ListoRevision = true;
+      // Ready for review
+    }
+    ```
+    Requires 6 data sections + 6 mandatory documents
+  </Tab>
+</Tabs>
+
+## Deleting Uploaded Documents
+
+Employees can delete and re-upload documents:
+
+```javascript
+const DeleteFile = async (req, res) => {
+  const { uploadID } = req.body;
+  
+  try {
+    await PoolvLife.query(FileUploadModel.DeleteFile, uploadID);
+    req.flash("success", "Documento borrado con exito");
+    res.redirect("back");
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+<Note>
+  Deleting from the database removes the file reference, but the physical file remains in the uploads directory. Consider implementing physical file cleanup for production.
+</Note>
+
+## Special Handling: Motivo de Ingreso
+
+For Nuevo Ingreso evaluations, "Motivo de Ingreso" is text-based:
+
+```javascript
+const IngresosMotivo = async (req, res) => {
+  const { evalID, motivoDescripcion, enctyptedData } = req.body;
+  
+  const dataPacket = {
+    evalID,
+    motivoDescripcion,
+  };
+  
+  try {
+    await PoolvLife.query(FileUploadModel.IngresosMotivo, dataPacket);
+    req.flash("success", "Se guardo motivo");
+    res.redirect(`/evaluacionvLife/evaluacionView/${enctyptedData}`);
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+This can also be deleted:
+
+```javascript
+const DeleteMotivo = async (req, res) => {
+  const { evalID } = req.body;
+  
+  try {
+    await PoolvLife.query(FileUploadModel.DeleteMotivo, evalID);
+    req.flash("success", "Motivo eliminado");
+    res.redirect("back");
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+  }
+};
+```
+
+## File Format Requirements
+
+### Accepted Format
+
+<Warning>
+  Currently, the system generates `.pdf` extensions for all uploads. Ensure your file upload form restricts to PDF format:
+  
+  ```html
+  <input type="file" name="file" accept=".pdf" required>
+  ```
+</Warning>
+
+### File Size Best Practices
+
+| Document Type | Recommended Size | Max Size |
+|---------------|------------------|----------|
+| Identification (INE) | 500KB - 2MB | 20MB |
+| Birth Certificate | 500KB - 2MB | 20MB |
+| Proof of Address | 200KB - 1MB | 20MB |
+| Educational Docs | 1MB - 5MB | 20MB |
+| Multi-page Documents | 2MB - 10MB | 20MB |
+
+<Info>
+  While the hard limit is 20MB, encourage users to optimize PDFs before upload for better performance and storage efficiency.
+</Info>
+
+## Document Retrieval
+
+Documents are retrieved for display in the evaluation view:
+
+```javascript
+const [GetActaPerma] = await PoolvLife.query(
+  EvaluationvLifeModel.GetActaPerma,
+  decryptedData
+);
+
+res.render("evaluationvLifeViews/evaluationView", {
+  ActaPerma: GetActaPerma[0],
+  // Contains filename for display/download
+});
+```
+
+## Document Access URLs
+
+Uploaded documents are publicly accessible:
+
+```
+http://localhost:4001/uploads/a8f5e3c2-6d4b-4a1c-9e8f-2b5c7d9e1f3a25.pdf
+```
+
+The public directory is served by Express:
+
+```javascript
+app.use(express.static(path.join(__dirname, "public")));
+```
+
+<Warning>
+  All uploaded documents are publicly accessible via direct URL. For production, consider implementing:
+  - Authentication checks before serving files
+  - Private storage with signed URLs
+  - Access logging and monitoring
+</Warning>
+
+## Error Handling
+
+### Common Upload Errors
+
+1. **File Too Large**
+   ```javascript
+   req.flash('message', 'El archivo excede los 20MB');
+   ```
+
+2. **Invalid File Type**
+   Handled by frontend file input restrictions
+
+3. **Storage Failure**
+   ```javascript
+   req.flash("message", "Algo salio mal !");
+   ```
+
+### Upload Validation
+
+Consider adding additional validation:
+
+```javascript
+// Example validation (not in current implementation)
+const validateUpload = (file) => {
+  if (!file) {
+    throw new Error('No file provided');
+  }
+  if (file.mimetype !== 'application/pdf') {
+    throw new Error('Only PDF files are allowed');
+  }
+  if (file.size > 20000000) {
+    throw new Error('File size exceeds 20MB limit');
+  }
+  return true;
+};
+```
+
+## Security Considerations
+
+<Warning>
+  **Important Security Measures for Production:**
+  
+  1. **File Type Validation**: Verify MIME type on server-side
+  2. **Virus Scanning**: Integrate antivirus scanning for uploads
+  3. **Access Control**: Restrict document access to authorized users
+  4. **File Size Monitoring**: Monitor total storage usage
+  5. **Content Security**: Validate PDF content is not malicious
+  6. **Private Storage**: Move uploads outside public directory
+  7. **Encrypted Storage**: Consider encrypting files at rest
+</Warning>
+
+## Related Files
+
+- **FileUploadController.js** (`src/controllers/FileUploadController.js:1`) - Upload handling logic
+- **app.js** (`src/app.js:64`) - Multer configuration
+- **EvaluationvLifeController.js** (`src/controllers/EvaluationvLifeController.js:99`) - Document validation
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Expediente Generation" icon="file-pdf" href="/features/expediente-generation">
+    Generate complete evaluation PDF with all data and documents
+  </Card>
+  <Card title="Evaluation Types" icon="list" href="/features/evaluation-types">
+    Learn about document requirements by evaluation type
+  </Card>
+</CardGroup>

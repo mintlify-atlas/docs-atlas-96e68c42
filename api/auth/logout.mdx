@@ -1,0 +1,142 @@
+---
+title: 'Logout'
+description: 'Destroy user session and log out'
+---
+
+## GET /auth/logout
+
+Terminates the current user session and logs the user out of the vLife DGO system. Destroys all session data and redirects to the sign-in page.
+
+### Request
+
+No parameters required. This is a simple GET request.
+
+```bash cURL
+curl -X GET https://api.vlife-dgo.ceacc.gob.mx/auth/logout \
+  --cookie "connect.sid=session_cookie_value"
+```
+
+```javascript JavaScript
+const response = await fetch('/auth/logout', {
+  method: 'GET',
+  credentials: 'include' // Include session cookie
+});
+```
+
+### Session Handling
+
+The endpoint checks the current session state:
+
+1. **If logged in** (`req.session.loggedin == true`):
+   - Calls `req.session.destroy()` to remove all session data
+   - Session cookie is invalidated
+   - User data cleared from memory
+
+2. **If not logged in**:
+   - No session to destroy
+   - Redirects to signin page anyway
+
+### Success Response
+
+**HTTP Status:** 302 (Redirect)
+
+**Location:** `/auth/signin`
+
+**Session:** Destroyed
+
+**Cookies:** Session cookie invalidated
+
+```json
+{
+  "redirectTo": "/auth/signin",
+  "session": null,
+  "loggedIn": false
+}
+```
+
+### Session Data Cleared
+
+The following session properties are destroyed:
+
+<ResponseField name="req.session.loggedin">
+  Authentication flag - set to false/removed
+</ResponseField>
+
+<ResponseField name="req.session.name">
+  Employee full name - cleared from memory
+</ResponseField>
+
+<ResponseField name="req.session.usrId">
+  Employee ID - removed from session
+</ResponseField>
+
+### Redirect Behavior
+
+<Info>
+  All logout requests redirect to `/auth/signin` regardless of whether a session existed.
+</Info>
+
+**Flow:**
+1. User requests `/auth/logout`
+2. Server destroys session (if exists)
+3. Server responds with 302 redirect
+4. Browser navigates to `/auth/signin`
+
+### Example Usage
+
+**HTML Link:**
+```html
+<a href="/auth/logout">Cerrar Sesión</a>
+```
+
+**JavaScript:**
+```javascript
+// Simple redirect
+window.location.href = '/auth/logout';
+
+// Or with fetch
+await fetch('/auth/logout', {
+  method: 'GET',
+  credentials: 'include'
+});
+window.location.href = '/auth/signin';
+```
+
+**Server-side (EJS template):**
+```ejs
+<% if (typeof user !== 'undefined') { %>
+  <a href="/auth/logout" class="btn btn-danger">
+    Cerrar Sesión
+  </a>
+<% } %>
+```
+
+### Security Notes
+
+<Warning>
+  This endpoint does not require authentication. It's safe to call even if no session exists.
+</Warning>
+
+<Note>
+  No CSRF protection is implemented on this endpoint as it performs a safe GET operation that only destroys the user's own session.
+</Note>
+
+### Session Configuration
+
+The application uses server-side sessions (likely express-session):
+
+- **Session Store:** Server-side (memory or database)
+- **Session Cookie:** `connect.sid` (default name)
+- **Destruction:** Complete removal via `req.session.destroy()`
+
+### Error Handling
+
+No explicit error handling is implemented. All requests redirect to `/auth/signin`:
+
+- Session exists and destroyed → redirect
+- No session exists → redirect
+- Error during destroy → likely redirects anyway
+
+<Tip>
+  For single-page applications (SPAs), you may want to call this endpoint via fetch and handle the redirect client-side.
+</Tip>

@@ -1,0 +1,366 @@
+---
+title: 'Expediente (Employee File)'
+description: 'Generate comprehensive employee evaluation reports in HTML and PDF formats'
+---
+
+## Overview
+
+The Expediente API generates comprehensive employee evaluation files that compile all captured data from the evaluation process. Reports are generated using Puppeteer for HTML-to-PDF conversion.
+
+<Note>
+  Expediente reports include personal data, family information, academic history, work trajectory, economic data, references, and more. Two report types are supported: **Nuevo Ingreso** (New Entry) and **Permanente** (Permanent).
+</Note>
+
+---
+
+## Render Expediente HTML
+
+<RequestExample>
+```bash GET /Expediente/RenderExpediente/:evalID
+curl -X GET https://api.vlife-dgo.com/Expediente/RenderExpediente/12345
+```
+</RequestExample>
+
+Generates the HTML view of the complete employee evaluation file.
+
+### Endpoint
+
+```
+GET /Expediente/RenderExpediente/:evalID
+```
+
+### Authentication
+
+No authentication required (public endpoint for internal PDF generation).
+
+### Path Parameters
+
+<ParamField path="evalID" type="integer" required>
+  The evaluation ID to generate the expediente for.
+</ParamField>
+
+### Response
+
+Returns an HTML view without layout (`layout: false`) optimized for PDF generation. The template used depends on evaluation type:
+
+- **tipoEvalID = 1**: `expedienteViews/RenderExpedientePerma` (Permanent employees)
+- **tipoEvalID ≠ 1**: `expedienteViews/RenderExpedienteNI` (New entry employees)
+
+### Data Sections Included
+
+<ResponseField name="personales" type="object">
+  Personal information of the employee.
+  
+  <Expandable title="Personal Data">
+    - Full name, RFC, CURP
+    - Birth date and place
+    - Contact information
+    - Address details
+    - Physical characteristics
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="datoseva" type="object">
+  Evaluation metadata.
+  
+  <Expandable title="Evaluation Data">
+    <ResponseField name="evalID" type="integer">
+      Evaluation identifier.
+    </ResponseField>
+    <ResponseField name="tipoEvalID" type="integer">
+      Evaluation type ID (1 = Permanente, 2 = Nuevo Ingreso).
+    </ResponseField>
+    <ResponseField name="evalTipo" type="string">
+      Evaluation type name.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="datosfami" type="array">
+  Family members information.
+  
+  <Expandable title="Family Data">
+    Each family member includes:
+    - `familiarNombre`: Full name
+    - `familiarParentesco`: Relationship
+    - `familiarOcupacion`: Occupation
+    - `familiarEdad`: Age
+    - `familiarVive`: Living status
+    - `familiarTelefono`: Phone number
+    - `familiarDependiente`: Dependent status
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="datosacad" type="array">
+  Academic history and education records.
+</ResponseField>
+
+<ResponseField name="datosredess" type="array">
+  Social media accounts and online presence.
+</ResponseField>
+
+<ResponseField name="datostrayecto" type="object">
+  Work trajectory for new entry employees.
+</ResponseField>
+
+<ResponseField name="datosTraPerma" type="object">
+  Work trajectory for permanent employees.
+</ResponseField>
+
+<ResponseField name="economicos" type="object">
+  Economic and financial information.
+  
+  <Expandable title="Economic Data">
+    Base financial data plus related arrays:
+    - Monthly income and expenses
+    - Asset declarations
+    - Debt obligations
+  </Expandable>
+</ResponseField>
+
+<ResponseField name="GetCuentas" type="array">
+  Bank accounts (active records only).
+</ResponseField>
+
+<ResponseField name="getCredito" type="array">
+  Credit lines and loans (active records only).
+</ResponseField>
+
+<ResponseField name="getInmuebles" type="array">
+  Real estate properties (active records only).
+</ResponseField>
+
+<ResponseField name="getMuebles" type="array">
+  Personal property and vehicles (active records only).
+</ResponseField>
+
+<ResponseField name="referencias" type="object">
+  Personal and professional references.
+</ResponseField>
+
+<ResponseField name="getCapaciitaciones" type="array">
+  Training and certifications (active records only).
+</ResponseField>
+
+<ResponseField name="datosUltimosEmpleosNI" type="array">
+  Recent employment history for new entry evaluations.
+</ResponseField>
+
+<ResponseField name="datosFamiliarProceso" type="array">
+  Family members involved in legal processes.
+</ResponseField>
+
+<ResponseField name="datosCorpFamiliar" type="array">
+  Family members in law enforcement or government.
+</ResponseField>
+
+<ResponseField name="datosIngresoExtra" type="array">
+  Additional income sources.
+</ResponseField>
+
+<ResponseField name="datosAdscripciones" type="array">
+  Work assignments and postings (Permanente only).
+</ResponseField>
+
+### Database Queries
+
+The endpoint executes multiple parallel queries to gather comprehensive data:
+
+```sql
+-- Personal data
+SELECT * FROM tbl_dgo_personalesperma personales
+WHERE evalID = ?
+ORDER BY personales.personalesCreado DESC LIMIT 1;
+
+-- Evaluation type
+SELECT eval.evalID, tip.tipoEvalID, tip.evalTipo
+FROM tbl_dgo_evaluaciones eval
+INNER JOIN cat_dgo_tipoeval tip ON eval.tipoEvalID = tip.tipoEvalID
+WHERE eval.evalID = ?
+ORDER BY eval.evalCreado DESC LIMIT 1;
+
+-- Family members (active only)
+SELECT eval.evalID, fam.*
+FROM tbl_dgo_evaluaciones eval
+INNER JOIN tbl_dgo_familiares fam ON eval.evalID = fam.evalID
+WHERE eval.evalID = ? AND fam.familiarActivo = 1
+ORDER BY fam.familiarCreado DESC;
+
+-- Additional queries for academics, social media, work history,
+-- economic data, assets, references, and training records
+```
+
+### Error Response
+
+```json
+{
+  "flash": {
+    "message": "Algo salio mal !"
+  },
+  "redirect": "back"
+}
+```
+
+Returns when:
+- Evaluation ID not found
+- Database connection errors
+- Missing required data
+
+---
+
+## Generate Expediente PDF
+
+<RequestExample>
+```bash GET /Expediente/ExpedienteViewPdf/:evalID
+curl -X GET https://api.vlife-dgo.com/Expediente/ExpedienteViewPdf/12345 \
+  --output expediente-12345.pdf
+```
+</RequestExample>
+
+Generates and downloads the expediente as a PDF file.
+
+### Endpoint
+
+```
+GET /Expediente/ExpedienteViewPdf/:evalID
+```
+
+### Authentication
+
+No authentication required.
+
+### Path Parameters
+
+<ParamField path="evalID" type="integer" required>
+  The evaluation ID to generate the PDF for.
+</ParamField>
+
+### Response
+
+<ResponseField name="Content-Type" type="string">
+  `application/pdf`
+</ResponseField>
+
+<ResponseField name="body" type="binary">
+  PDF file binary data.
+</ResponseField>
+
+### PDF Generation Settings
+
+The PDF is generated using Puppeteer with the following configuration:
+
+```javascript
+let navegador = await puppeteer.launch({
+  ignoreHTTPSErrors: true,
+  args: ["--no-sandbox", "--disable-setuid-sandbox"],
+});
+
+let pagina = await navegador.newPage();
+await pagina.goto(url);
+await pagina.emulateMediaType("screen");
+
+let pdf = await pagina.pdf({
+  format: "A4",
+  printBackground: true,
+  margin: { 
+    left: "1cm", 
+    top: "1cm", 
+    right: "1cm", 
+    bottom: "2.5cm" 
+  },
+});
+```
+
+### PDF Specifications
+
+<ParamField query="format" type="string" default="A4">
+  Paper size: A4 (210mm × 297mm)
+</ParamField>
+
+<ParamField query="printBackground" type="boolean" default="true">
+  Includes background colors and images in PDF.
+</ParamField>
+
+<ParamField query="margin.left" type="string" default="1cm">
+  Left margin.
+</ParamField>
+
+<ParamField query="margin.top" type="string" default="1cm">
+  Top margin.
+</ParamField>
+
+<ParamField query="margin.right" type="string" default="1cm">
+  Right margin.
+</ParamField>
+
+<ParamField query="margin.bottom" type="string" default="2.5cm">
+  Bottom margin (larger for footers).
+</ParamField>
+
+### Generation Process
+
+1. **HTML Rendering**: Calls `/Expediente/RenderExpediente/:evalID` internally
+2. **Page Load**: Puppeteer navigates to HTML view at `http://localhost:4001`
+3. **Media Emulation**: Sets media type to "screen" for proper styling
+4. **PDF Conversion**: Renders HTML to PDF with specified settings
+5. **Response**: Returns PDF binary with `application/pdf` content type
+6. **Cleanup**: Closes Puppeteer browser instance
+
+### Performance Considerations
+
+<Warning>
+  PDF generation is resource-intensive. Consider:
+  - Caching generated PDFs for frequently accessed reports
+  - Rate limiting to prevent server overload
+  - Async job queues for batch generation
+  - Timeout settings for large reports
+</Warning>
+
+### Error Response
+
+```json
+{
+  "flash": {
+    "message": "Algo salio mal !"
+  },
+  "redirect": "back"
+}
+```
+
+Returns when:
+- Evaluation ID not found
+- Puppeteer fails to launch
+- HTML rendering errors
+- PDF generation timeout
+
+---
+
+## Implementation Details
+
+### Source Code References
+
+- **Routes**: ExpedienteRoutes.js:6-7
+- **Controller**: ExpedienteController.js:23-191
+- **Models**: ExpedienteModel.js (15+ SQL queries)
+- **Puppeteer Config**: ExpedienteController.js:6-21
+
+### Template Views
+
+- `expedienteViews/RenderExpedientePerma.hbs` - Permanent employee template
+- `expedienteViews/RenderExpedienteNI.hbs` - New entry employee template
+
+### Data Filtering
+
+<Info>
+  All data queries filter for active records only (e.g., `familiarActivo = 1`, `academicoActivo = 1`) to exclude soft-deleted entries.
+</Info>
+
+---
+
+## Use Cases
+
+1. **Official Records**: Generate complete employee evaluation file for HR records
+2. **Background Checks**: Compile all background investigation data
+3. **Audit Compliance**: Produce standardized reports for regulatory review
+4. **Management Review**: Provide comprehensive evaluation summaries
+5. **Archive Documentation**: Create permanent record of evaluation process

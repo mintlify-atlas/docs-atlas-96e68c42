@@ -1,0 +1,457 @@
+---
+title: File Upload Configuration
+description: Multer configuration for handling file uploads, storage settings, and size limits in vLife DGO
+---
+
+## Overview
+
+vLife DGO uses Multer middleware to handle file uploads for employee documentation, certificates, and other required files. The system is configured to store PDF files with a maximum size limit of 20MB.
+
+## Multer Configuration
+
+The file upload middleware is configured in `src/app.js`:
+
+```javascript
+import multer from "multer";
+import { v4 as uuidv4 } from 'uuid';
+import * as path from "path";
+
+// Multer settings
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, 'public/uploads'),
+  filename: (req, file, cb) => {
+    const fecha = new Date()
+    const mes = fecha.getMonth() + 1
+    const dia = fecha.getDay()
+    cb(null, uuidv4() + dia + mes + '.pdf')
+  }
+})
+
+const fileSizeLimitErrorHandler = (err, req, res, next) => {
+  if (err) {
+    req.flash('message', 'El archivo excede los 20MB')
+    res.redirect('back')
+  } else {
+    next()
+  }
+}
+
+app.use(multer({
+  storage: storage,
+  limits: { fileSize: 20000000 },
+}).single('file'), fileSizeLimitErrorHandler)
+```
+
+## Storage Configuration
+
+### Storage Destination
+
+<ParamField path="destination" type="string" default="public/uploads">
+  The directory where uploaded files are stored. Located at `src/public/uploads` relative to the application root.
+</ParamField>
+
+### File Naming Strategy
+
+Files are automatically renamed using a combination of UUID and date components:
+
+```javascript
+filename: (req, file, cb) => {
+  const fecha = new Date()
+  const mes = fecha.getMonth() + 1  // Month (1-12)
+  const dia = fecha.getDay()        // Day of week (0-6)
+  cb(null, uuidv4() + dia + mes + '.pdf')
+}
+```
+
+**Filename Format**: `{UUID}{day}{month}.pdf`
+
+**Example**: `a3d5f2e1-4b6c-8d9e-1a2b-3c4d5e6f7g8h15.pdf`
+
+Where:
+- `a3d5f2e1-4b6c-8d9e-1a2b-3c4d5e6f7g8h` is the UUID v4
+- `1` is the day of week (Monday)
+- `5` is the month (May)
+- `.pdf` is the file extension
+
+<Note>
+  The UUID ensures filename uniqueness to prevent file overwrites, while the date components provide basic temporal information without using the full timestamp.
+</Note>
+
+## Upload Limits
+
+### File Size Limit
+
+<ParamField path="fileSize" type="number" default="20000000">
+  Maximum file size in bytes. Currently set to 20MB (20,000,000 bytes).
+</ParamField>
+
+```javascript
+limits: { fileSize: 20000000 }, // 20MB
+```
+
+### File Type Restrictions
+
+The current configuration forces all uploaded files to have a `.pdf` extension regardless of the original file type. This is enforced in the filename function:
+
+```javascript
+cb(null, uuidv4() + dia + mes + '.pdf')
+```
+
+<Warning>
+  **Important**: The system automatically renames ALL uploaded files to `.pdf` extension, regardless of actual file type. This means:
+  - Images (jpg, png) will be saved as .pdf
+  - Documents (docx, xlsx) will be saved as .pdf
+  - Any file type will be saved as .pdf
+  
+  Consider implementing file type validation to ensure only actual PDF files are accepted.
+</Warning>
+
+## Upload Error Handling
+
+The application includes a custom error handler for file size limit violations:
+
+```javascript
+const fileSizeLimitErrorHandler = (err, req, res, next) => {
+  if (err) {
+    req.flash('message', 'El archivo excede los 20MB')
+    res.redirect('back')
+  } else {
+    next()
+  }
+}
+```
+
+When a file exceeds 20MB:
+1. An error message is stored in the flash session: "El archivo excede los 20MB"
+2. The user is redirected back to the previous page
+3. The flash message is displayed to the user
+
+## Setting Up File Uploads
+
+<Steps>
+  <Step title="Ensure upload directory exists">
+    Create the uploads directory if it doesn't exist:
+    
+    ```bash
+    mkdir -p src/public/uploads
+    chmod 755 src/public/uploads
+    ```
+  </Step>
+  
+  <Step title="Set proper permissions">
+    Ensure the application has write permissions:
+    
+    ```bash
+    # Linux/Mac
+    chown -R www-data:www-data src/public/uploads
+    
+    # Or for development
+    chmod 777 src/public/uploads
+    ```
+  </Step>
+  
+  <Step title="Configure .gitignore">
+    Exclude uploaded files from version control:
+    
+    ```bash
+    # Add to .gitignore
+    src/public/uploads/*
+    !src/public/uploads/.gitkeep
+    ```
+  </Step>
+  
+  <Step title="Test file upload">
+    Upload a test file through the application and verify it appears in `src/public/uploads/`.
+  </Step>
+</Steps>
+
+## Usage in Routes
+
+The multer middleware is configured globally to handle single file uploads with the field name `file`:
+
+```javascript
+app.use(multer({
+  storage: storage,
+  limits: { fileSize: 20000000 },
+}).single('file'), fileSizeLimitErrorHandler)
+```
+
+### HTML Form Example
+
+```html
+<form action="/FileUpload/upload" method="POST" enctype="multipart/form-data">
+  <input type="file" name="file" accept=".pdf" required>
+  <button type="submit">Upload File</button>
+</form>
+```
+
+### Route Handler Example
+
+```javascript
+// In FileUploadRoutes.js
+router.post('/upload', async (req, res) => {
+  if (!req.file) {
+    req.flash('message', 'No file selected');
+    return res.redirect('back');
+  }
+  
+  // File is available as req.file
+  const uploadedFile = {
+    filename: req.file.filename,
+    originalName: req.file.originalname,
+    size: req.file.size,
+    path: req.file.path,
+  };
+  
+  // Save file info to database...
+  
+  req.flash('success', 'File uploaded successfully');
+  res.redirect('/dashboard');
+});
+```
+
+## File Object Properties
+
+When a file is uploaded, Multer provides a `req.file` object with the following properties:
+
+<ParamField path="fieldname" type="string">
+  Field name specified in the form (`"file"`).
+</ParamField>
+
+<ParamField path="originalname" type="string">
+  Name of the file on the user's computer.
+</ParamField>
+
+<ParamField path="encoding" type="string">
+  Encoding type of the file.
+</ParamField>
+
+<ParamField path="mimetype" type="string">
+  MIME type of the file (e.g., `"application/pdf"`).
+</ParamField>
+
+<ParamField path="destination" type="string">
+  Folder where the file was saved (`"public/uploads"`).
+</ParamField>
+
+<ParamField path="filename" type="string">
+  Generated filename with UUID and date.
+</ParamField>
+
+<ParamField path="path" type="string">
+  Full path to the uploaded file.
+</ParamField>
+
+<ParamField path="size" type="number">
+  File size in bytes.
+</ParamField>
+
+## Improving the Upload Configuration
+
+### Add File Type Validation
+
+Validate that uploaded files are actually PDFs:
+
+```javascript
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, 'public/uploads'),
+  filename: (req, file, cb) => {
+    // Validate file type
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Only PDF files are allowed'));
+    }
+    
+    const fecha = new Date()
+    const mes = fecha.getMonth() + 1
+    const dia = fecha.getDay()
+    cb(null, uuidv4() + dia + mes + '.pdf')
+  }
+})
+
+// Add fileFilter option
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
+    cb(null, true);
+  } else {
+    cb(new Error('Only PDF files are allowed'), false);
+  }
+};
+
+app.use(multer({
+  storage: storage,
+  limits: { fileSize: 20000000 },
+  fileFilter: fileFilter,
+}).single('file'), fileSizeLimitErrorHandler)
+```
+
+### Improve Date in Filename
+
+Use more accurate date information:
+
+```javascript
+filename: (req, file, cb) => {
+  const fecha = new Date()
+  const timestamp = fecha.getTime()
+  cb(null, `${uuidv4()}_${timestamp}.pdf`)
+}
+```
+
+This generates filenames like: `a3d5f2e1-4b6c-8d9e-1a2b-3c4d5e6f7g8h_1678896000000.pdf`
+
+### Support Multiple File Types
+
+If you need to support various document types:
+
+```javascript
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword'];
+  
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only PDF, JPG, PNG, and DOC files are allowed'), false);
+  }
+};
+
+filename: (req, file, cb) => {
+  const ext = path.extname(file.originalname);
+  const fecha = new Date()
+  const timestamp = fecha.getTime()
+  cb(null, `${uuidv4()}_${timestamp}${ext}`)
+}
+```
+
+## Security Considerations
+
+<Warning>
+  **Security Best Practices:**
+  
+  1. **File Type Validation**: Always validate file MIME types, not just extensions
+  2. **Virus Scanning**: Consider integrating antivirus scanning for uploaded files
+  3. **Access Control**: Restrict access to uploaded files based on user permissions
+  4. **File Size Limits**: Prevent DoS attacks by enforcing reasonable size limits
+  5. **Storage Location**: Store uploads outside the web root or serve through controlled endpoints
+  6. **Filename Sanitization**: Never use user-provided filenames directly (current UUID approach is good)
+</Warning>
+
+### Secure File Serving
+
+Instead of serving files directly from `public/uploads`, use a controlled endpoint:
+
+```javascript
+router.get('/download/:filename', async (req, res) => {
+  // Verify user has permission to access this file
+  const hasPermission = await checkUserPermission(req.session.userId, req.params.filename);
+  
+  if (!hasPermission) {
+    return res.status(403).send('Access denied');
+  }
+  
+  const filepath = path.join(__dirname, '../public/uploads', req.params.filename);
+  res.download(filepath);
+});
+```
+
+## Storage Management
+
+### Disk Space Monitoring
+
+Monitor available disk space regularly:
+
+```bash
+# Check disk usage
+du -sh src/public/uploads/
+
+# Check available space
+df -h
+```
+
+### Automated Cleanup
+
+Create a cleanup script for old or orphaned files:
+
+```javascript
+// cleanup.js
+import fs from 'fs';
+import path from 'path';
+import { PoolvLife } from './database/Connection.js';
+
+const UPLOADS_DIR = './src/public/uploads';
+const MAX_AGE_DAYS = 180; // 6 months
+
+async function cleanupOrphanedFiles() {
+  const files = fs.readdirSync(UPLOADS_DIR);
+  const [rows] = await PoolvLife.query('SELECT archivo FROM documentos');
+  const dbFiles = new Set(rows.map(r => r.archivo));
+  
+  let deleted = 0;
+  
+  for (const file of files) {
+    if (!dbFiles.has(file)) {
+      const filepath = path.join(UPLOADS_DIR, file);
+      const stats = fs.statSync(filepath);
+      const ageInDays = (Date.now() - stats.mtime) / (1000 * 60 * 60 * 24);
+      
+      if (ageInDays > MAX_AGE_DAYS) {
+        fs.unlinkSync(filepath);
+        deleted++;
+        console.log(`Deleted orphaned file: ${file}`);
+      }
+    }
+  }
+  
+  console.log(`Cleanup complete. Deleted ${deleted} files.`);
+}
+
+cleanupOrphanedFiles();
+```
+
+## Troubleshooting
+
+### Upload Directory Not Found
+
+```
+Error: ENOENT: no such file or directory, open 'public/uploads/...'
+```
+
+**Solution**: Create the uploads directory:
+```bash
+mkdir -p src/public/uploads
+```
+
+### Permission Denied
+
+```
+Error: EACCES: permission denied, open 'public/uploads/...'
+```
+
+**Solution**: Fix directory permissions:
+```bash
+chmod 755 src/public/uploads
+```
+
+### File Size Limit Errors
+
+If users see "El archivo excede los 20MB":
+
+1. Verify the file is actually under 20MB
+2. Check if nginx/Apache have their own upload size limits
+3. Adjust the limit in `app.js` if needed:
+   ```javascript
+   limits: { fileSize: 50000000 }, // Increase to 50MB
+   ```
+
+### Files Not Appearing
+
+If files upload but don't appear:
+
+1. Check the `__dirname` path is correct
+2. Verify the uploads directory exists
+3. Check file permissions
+4. Look for errors in application logs
+
+## Related Documentation
+
+- [File Upload API](/api/documents/upload) - API endpoints for file operations
+- [Document Upload Feature](/features/document-upload) - File upload security guidelines
+- [Database Configuration](/configuration/database) - Storing file metadata

@@ -1,0 +1,670 @@
+---
+title: Finalizing Your Evaluation
+description: Submit your completed evaluation for review and track its status
+---
+
+## Overview
+
+Once you've completed all six data sections and uploaded all required documents, you're ready to finalize your evaluation. This is the final step before your information is submitted for official review.
+
+<Warning>
+Finalizing your evaluation is irreversible. Make sure all information is accurate and complete before submitting.
+</Warning>
+
+## Prerequisites
+
+Before you can finalize, the system verifies:
+
+<AccordionGroup>
+  <Accordion title="All Data Sections Complete (6/6)">
+    ✓ Personal Data
+    ✓ Family Data
+    ✓ Academic Data
+    ✓ Career Trajectory
+    ✓ Economic Data
+    ✓ References
+  </Accordion>
+
+  <Accordion title="All Required Documents Uploaded">
+    **Permanencia (5 documents):**
+    ✓ Birth Certificate
+    ✓ Official ID (INE)
+    ✓ Proof of Address
+    ✓ Proof of Studies
+    ✓ Proof of Income
+
+    **Nuevo Ingreso (6 documents/items):**
+    ✓ Birth Certificate
+    ✓ Official ID (INE)
+    ✓ Proof of Address
+    ✓ Proof of Studies
+    ✓ Military Service Card
+    ✓ Proof of Income OR Motive Description
+  </Accordion>
+</AccordionGroup>
+
+<Info>
+The "Finalize" button only appears when ALL requirements are met. If you don't see it, check which sections or documents are still incomplete.
+</Info>
+
+---
+
+## How the System Checks Completion
+
+### Permanencia Validation
+
+The system runs this check:
+
+```javascript
+if (TotalCaptura === 6 && TotalCargaPerma === 5) {
+  const ListoRevision = true;
+  // Finalize button becomes available
+}
+```
+
+**Where:**
+- `TotalCaptura` = Number of completed data sections (must be 6)
+- `TotalCargaPerma` = Number of uploaded required documents (must be 5)
+
+### Nuevo Ingreso Validation
+
+The system runs this check:
+
+```javascript
+if (TotalCaptura === 6 && TotalCargaNI === 6) {
+  const ListoRevision = true;
+  // Finalize button becomes available
+}
+```
+
+**Where:**
+- `TotalCaptura` = Number of completed data sections (must be 6)
+- `TotalCargaNI` = Number of documents/items (5 documents + 1 motive OR 6 documents = 6 total)
+
+<Note>
+The system automatically detects your evaluation type and applies the correct validation.
+</Note>
+
+---
+
+## Pre-Finalization Checklist
+
+Before clicking finalize, review:
+
+<Steps>
+  <Step title="Verify Personal Information">
+    - [ ] Name is spelled correctly everywhere
+    - [ ] RFC and CURP are accurate
+    - [ ] Contact information is current
+    - [ ] Address matches your documents
+  </Step>
+
+  <Step title="Review Family Members">
+    - [ ] All immediate family members included
+    - [ ] Information is accurate and up-to-date
+    - [ ] No family members mistakenly listed as references
+  </Step>
+
+  <Step title="Check Academic Information">
+    - [ ] Highest degree is correct
+    - [ ] Institution names are accurate
+    - [ ] Dates are correct
+    - [ ] Uploaded education document matches what you entered
+  </Step>
+
+  <Step title="Verify Work History">
+    - [ ] Current position information is accurate (Permanencia)
+    - [ ] Previous employment is complete (Nuevo Ingreso)
+    - [ ] Supervisor information is correct
+    - [ ] Legal/disciplinary questions answered honestly
+  </Step>
+
+  <Step title="Review Financial Information">
+    - [ ] Income amounts are accurate
+    - [ ] All expenses are realistic and add up correctly
+    - [ ] All bank accounts are listed
+    - [ ] All debts and loans are disclosed
+    - [ ] Properties and vehicles are accurate
+  </Step>
+
+  <Step title="Confirm References">
+    - [ ] Six total references (3 professional + 3 personal)
+    - [ ] No family members listed
+    - [ ] Contact information is accurate and current
+    - [ ] References have been notified and agreed
+  </Step>
+
+  <Step title="Verify Documents">
+    - [ ] All required documents uploaded
+    - [ ] Documents are clear and readable
+    - [ ] All pages of multi-page documents included
+    - [ ] Documents match the information you entered
+  </Step>
+</Steps>
+
+<Warning>
+**Final Check**: Review your evaluation dashboard one last time. All sections and documents should have green checkmarks. Progress should show 100%.
+</Warning>
+
+---
+
+## Finalizing Your Evaluation
+
+<Steps>
+  <Step title="Access Your Evaluation Dashboard">
+    Make sure you're viewing your evaluation at:
+    ```
+    /evaluacionvLife/evaluacionView/[encrypted_evaluation_id]
+    ```
+
+    Verify that the page shows:
+    - All 6 data sections complete
+    - All required documents uploaded
+    - Progress at 100%
+    - "Listo para Revisión" (Ready for Review) status
+  </Step>
+
+  <Step title="Locate the Finalize Button">
+    The finalize button should be visible on your dashboard.
+
+    It may be labeled:
+    - "Finalizar Evaluación"
+    - "Enviar a Revisión"
+    - "Concluir Captura"
+
+    <Info>
+    If you don't see a finalize button, the system has detected incomplete requirements. Check all sections and documents.
+    </Info>
+  </Step>
+
+  <Step title="Read the Confirmation">
+    When you click finalize, you'll see a confirmation dialog:
+
+    - Warning that this action is final
+    - Notice that you cannot edit after finalization
+    - Confirmation that all information is accurate
+    - Option to cancel or proceed
+  </Step>
+
+  <Step title="Confirm Finalization">
+    If you're certain everything is correct:
+    - Click "Yes" or "Confirm" or "Finalizar"
+    - The system processes your submission
+    - Wait for the confirmation message
+  </Step>
+
+  <Step title="Receive Confirmation">
+    Success message: **"Evaluación Finalizada"**
+
+    You'll be redirected to your profile page at `/auth/profile`
+
+    The system records:
+    - Evaluation ID
+    - Finalization date and time (`finalizadoFecha`)
+    - Sets evaluation as finalized in database
+  </Step>
+</Steps>
+
+---
+
+## What Happens After Finalization
+
+### Immediate Effects
+
+1. **Evaluation is Locked**
+   - You can no longer edit any data sections
+   - You cannot change or upload new documents
+   - All information is saved as-submitted
+
+2. **Status Changes**
+   - Your evaluation status changes to "Finalized"
+   - Dashboard shows "En Revisión" (Under Review)
+   - Finalization date is recorded
+
+3. **Profile Update**
+   - Your profile shows the finalized evaluation
+   - You can view but not edit the evaluation
+   - Status tracking becomes available
+
+### Review Process Begins
+
+<Steps>
+  <Step title="Initial Review">
+    Staff reviewers receive notification of your finalized evaluation.
+
+    They will:
+    - Verify all required sections are complete
+    - Check document quality and validity
+    - Review information for consistency
+    - Flag any issues or discrepancies
+  </Step>
+
+  <Step title="Background Investigation">
+    Investigators may:
+    - Contact your references
+    - Verify employment history
+    - Check criminal and legal records
+    - Verify educational credentials
+    - Conduct financial background checks
+    - Visit your residence
+    - Interview you or your contacts
+
+    <Info>
+    This process can take several weeks to several months depending on complexity and workload.
+    </Info>
+  </Step>
+
+  <Step title="Review Comments">
+    If reviewers have questions or find issues:
+    - They may add comments to your evaluation
+    - You'll see these comments on your profile
+    - You may be asked to provide clarification
+    - You may need to provide additional documentation
+
+    <Note>
+    Check your profile regularly for any comments or requests from reviewers.
+    </Note>
+  </Step>
+
+  <Step title="Final Decision">
+    After investigation completes:
+    - Evaluation is approved or denied
+    - You'll be notified of the decision
+    - If approved, next steps will be provided
+  </Step>
+</Steps>
+
+---
+
+## Viewing Your Finalized Evaluation
+
+From your profile page:
+
+### Current Evaluation Section
+
+You'll see:
+- Evaluation ID
+- Year
+- Type (Permanencia or Nuevo Ingreso)
+- Status: "En Revisión" (Under Review)
+- Finalization date
+
+### Accessing Evaluation Details
+
+1. Click on your evaluation link
+2. You can view all submitted information
+3. All sections are read-only
+4. Documents can be downloaded but not changed
+
+### Viewing Uploaded Documents
+
+From your profile:
+- Click "Documentos" or "Ver Documentos"
+- See list of all uploaded documents
+- Download any document for your records
+- Verify what was submitted
+
+<Tip>
+Download copies of all your uploaded documents for your personal records immediately after finalizing.
+</Tip>
+
+---
+
+## Tracking Your Evaluation Status
+
+### Status Indicators
+
+<AccordionGroup>
+  <Accordion title="En Revisión (Under Review)">
+    - Your evaluation has been submitted
+    - Staff is reviewing your information
+    - Background investigation may be in progress
+    - No action needed from you unless contacted
+  </Accordion>
+
+  <Accordion title="Comentarios (Comments)">
+    - Reviewers have added comments or questions
+    - Check your profile for comment details
+    - Respond promptly to any requests
+    - May need to provide additional information
+  </Accordion>
+
+  <Accordion title="Aprobado (Approved)">
+    - Your evaluation has been approved
+    - You may proceed to next steps
+    - Certificate may be available
+    - Follow instructions provided
+  </Accordion>
+
+  <Accordion title="Rechazado (Rejected)">
+    - Evaluation was not approved
+    - Reasons should be provided
+    - May be able to reapply later
+    - Contact HR for clarification
+  </Accordion>
+</AccordionGroup>
+
+### Checking for Updates
+
+1. **Log in regularly** to check status
+2. **Check profile page** for any changes
+3. **Read all comments** from reviewers
+4. **Watch for notifications** in the system
+5. **Check email** (if system sends notifications)
+
+---
+
+## Responding to Reviewer Comments
+
+If reviewers add comments:
+
+<Steps>
+  <Step title="Read Comments Carefully">
+    - Access your profile
+    - Look for "Comentarios" section
+    - Read all comments thoroughly
+    - Note any specific requests or questions
+  </Step>
+
+  <Step title="Gather Requested Information">
+    - Collect any additional documents requested
+    - Prepare clarifications or explanations
+    - Verify accuracy of what you're providing
+  </Step>
+
+  <Step title="Respond Promptly">
+    - Don't delay in responding
+    - Follow any specific instructions given
+    - Be thorough but concise
+    - Be professional and respectful
+  </Step>
+
+  <Step title="Submit Response">
+    The system may have:
+    - A comment reply feature
+    - A way to upload additional documents
+    - Contact information for direct communication
+
+    Follow the provided method to respond.
+  </Step>
+</Steps>
+
+<Warning>
+Ignoring reviewer comments can result in delays or rejection of your evaluation. Respond as quickly as possible.
+</Warning>
+
+---
+
+## Certificates and Expedientes
+
+After approval, you may receive:
+
+### Certificate (Constancia)
+
+Once your evaluation is fully approved:
+
+1. A certificate becomes available on your profile
+2. Look for "Descargar Constancia" or similar link
+3. Click to download your certificate
+4. The certificate includes:
+   - Your name and information
+   - Evaluation type and year
+   - Approval confirmation
+   - Validation code
+   - Official signatures and stamps
+
+<Info>
+The certificate has a unique validation code that can be verified. Keep this document safe.
+</Info>
+
+### Expediente (Complete File)
+
+Your complete evaluation file may be available:
+
+1. Click "Ver Expediente" or similar
+2. Download or view your complete file
+3. This includes:
+   - All data sections
+   - All uploaded documents
+   - Formatted as official report
+4. Save this for your records
+
+---
+
+## Common Issues After Finalization
+
+<AccordionGroup>
+  <Accordion title="Found an Error After Finalizing">
+    **Problem**: Discovered a mistake after submitting.
+
+    **Solutions**:
+    - Contact your evaluator or HR immediately
+    - Explain the error clearly
+    - Provide correct information
+    - They may be able to make corrections
+    - May require formal correction request
+
+    <Warning>
+    Don't wait. Report errors immediately to minimize impact.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Reference Not Responding">
+    **Problem**: Investigator can't reach a reference.
+
+    **Solutions**:
+    - Contact your reference immediately
+    - Verify contact information is still correct
+    - Remind them to watch for calls
+    - If reference is unavailable, notify evaluators
+    - May need to provide alternate reference
+  </Accordion>
+
+  <Accordion title="Document Rejected After Finalization">
+    **Problem**: A document was found to be inadequate.
+
+    **Solutions**:
+    - Reviewers will comment on what's needed
+    - Obtain the correct or better quality document
+    - Submit through the method indicated by reviewers
+    - May be able to upload replacement
+  </Accordion>
+
+  <Accordion title="Long Wait with No Updates">
+    **Problem**: Weeks have passed with no status change.
+
+    **Solutions**:
+    - Be patient - investigations take time
+    - Check profile regularly for updates
+    - After reasonable time (4-6 weeks), inquire politely
+    - Contact HR or evaluation coordinator
+    - Ask about expected timeline
+  </Accordion>
+
+  <Accordion title="Need to Withdraw Application">
+    **Problem**: Need to cancel your evaluation.
+
+    **Solutions**:
+    - Contact HR or evaluation coordinator
+    - Explain reason for withdrawal
+    - Follow their withdrawal procedure
+    - Get written confirmation if possible
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Best Practices
+
+### Before Finalizing
+
+1. **Review multiple times**: Don't rush the final check
+2. **Ask someone to help**: Have another person review for errors
+3. **Check against documents**: Verify data matches uploaded documents
+4. **Confirm references**: Make sure references are still willing and reachable
+5. **Save copies**: Download or screenshot your evaluation before finalizing
+
+### After Finalizing
+
+1. **Document everything**: Keep copies of all documents and your evaluation
+2. **Stay responsive**: Check for updates regularly
+3. **Be available**: Ensure you can be contacted (phone, email)
+4. **Keep references informed**: Let them know investigation is underway
+5. **Be patient but proactive**: Balance waiting with appropriate follow-up
+
+---
+
+## Next Steps After Approval
+
+Once your evaluation is approved:
+
+<Steps>
+  <Step title="Receive Notification">
+    You'll be notified of approval through:
+    - System notification on profile
+    - Email (if system sends them)
+    - Direct contact from HR
+  </Step>
+
+  <Step title="Download Certificate">
+    - Access your profile
+    - Download your certificate
+    - Print copies for your records
+    - Note the validation code
+  </Step>
+
+  <Step title="Follow HR Instructions">
+    You may need to:
+    - Complete additional paperwork
+    - Attend orientation or training
+    - Schedule medical examination
+    - Complete C3 evaluation
+    - Provide additional documents
+
+    Follow all instructions from HR carefully.
+  </Step>
+
+  <Step title="Begin Employment Process">
+    For approved candidates:
+    - **Permanencia**: Continue with your position
+    - **Nuevo Ingreso**: Begin onboarding process
+
+    Congratulations on completing your evaluation!
+  </Step>
+</Steps>
+
+---
+
+## Contact and Support
+
+If you need assistance:
+
+### For Technical Issues
+- System not working properly
+- Cannot access evaluation
+- Upload errors
+- Login problems
+
+Contact your IT or technical support.
+
+### For Evaluation Questions
+- Status inquiries
+- Reviewer comments
+- Document issues
+- Process questions
+
+Contact your HR department or evaluation coordinator.
+
+### For Urgent Issues
+- Serious errors in submitted information
+- Emergency that affects your availability
+- Time-sensitive problems
+
+Contact HR immediately and explain the urgency.
+
+---
+
+## Summary
+
+Finalizing your evaluation:
+
+<Steps>
+  <Step title="Complete all 6 data sections">
+    Personal, Family, Academic, Career, Economic, References
+  </Step>
+
+  <Step title="Upload all required documents">
+    5 for Permanencia, 6 for Nuevo Ingreso
+  </Step>
+
+  <Step title="Review everything carefully">
+    Check all information for accuracy
+  </Step>
+
+  <Step title="Click Finalize">
+    Submit your completed evaluation
+  </Step>
+
+  <Step title="Wait for review">
+    Background investigation proceeds
+  </Step>
+
+  <Step title="Respond to any comments">
+    Provide additional information if requested
+  </Step>
+
+  <Step title="Receive decision">
+    Approved or denied notification
+  </Step>
+
+  <Step title="Download certificate">
+    If approved, get your official certificate
+  </Step>
+</Steps>
+
+<Card title="Congratulations!" icon="trophy">
+  You've completed your vLife DGO evaluation. Best wishes for a successful outcome and career with CEACC Durango!
+</Card>
+
+---
+
+## Technical Reference
+
+For developers or technical staff:
+
+### Finalization Process
+
+The system executes:
+
+```javascript
+const FinalizarEvaluacion = async (req, res) => {
+  const { encryptedData } = req.body;
+  const evalID = ncryptObjet.decrypt(encryptedData);
+  const finalizadoFecha = Helpers.GetDate();
+  
+  const dataPacket = {
+    evalID,
+    finalizadoFecha,
+  };
+  
+  await PoolvLife.query(
+    EvaluationvLifeModel.SaveFinalizado, 
+    dataPacket
+  );
+}
+```
+
+This:
+- Decrypts the evaluation ID
+- Records current date/time as finalization date
+- Saves to `tbl_dgo_evalfinalizadas` table
+- Sets `finalizadoActivo = 1`
+- Redirects to profile page
+
+### Database Tables
+
+- `tbl_dgo_evaluaciones` - Main evaluation record
+- `tbl_dgo_evalfinalizadas` - Finalization record
+- `tbl_dgo_comentarios` - Reviewer comments
+- `tbl_dgo_constancias` - Certificates
+- Various data tables for each section

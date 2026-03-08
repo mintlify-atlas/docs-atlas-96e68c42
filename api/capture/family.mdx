@@ -1,0 +1,237 @@
+---
+title: Family Data Capture
+description: API endpoints for capturing and managing family member information during background evaluations
+---
+
+## Overview
+
+The Family Data Capture API allows you to record information about the candidate's family members. This includes parents, siblings, spouse, children, and other dependents. Multiple family members can be added, edited, and removed for each candidate.
+
+## Authentication
+
+All endpoints require authentication via the `isLoggedIn` middleware. Users must have an active session to access these endpoints.
+
+## Get Family Data
+
+<api method="GET" path="/familiaresCapturePermanencia/:encryptedData" />
+
+Retrieves all family member records for a specific evaluation.
+
+### Path Parameters
+
+<ParamField path="encryptedData" type="string" required>
+  Encrypted evaluation ID that uniquely identifies the candidate's evaluation record
+</ParamField>
+
+### Response
+
+Returns a view with the following data:
+
+<ResponseField name="getDataFamiliares" type="array">
+  Array of family member records, each containing complete information about a family member
+</ResponseField>
+
+---
+
+## Save Family Member
+
+<api method="POST" path="/saveFamiliaresPermanencia" />
+
+Adds a new family member to the candidate's profile.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID for the candidate
+</ParamField>
+
+<ParamField body="familiarNombres" type="string" required>
+  First name(s) of the family member
+</ParamField>
+
+<ParamField body="familiarApellidos" type="string" required>
+  Last name(s) of the family member
+</ParamField>
+
+<ParamField body="familiarParentesco" type="string" required>
+  Relationship to the candidate (e.g., "Padre", "Madre", "Hijo", "Hija", "Esposo/a", "Hermano/a")
+</ParamField>
+
+<ParamField body="familiarOcupacion" type="string" required>
+  Occupation or profession of the family member
+</ParamField>
+
+<ParamField body="familiarEdad" type="integer" required>
+  Age of the family member in years
+</ParamField>
+
+<ParamField body="familiarVive" type="string" required>
+  Whether the family member is alive ("Si" or "No")
+</ParamField>
+
+<ParamField body="familiarTelefono" type="string">
+  Contact phone number for the family member
+</ParamField>
+
+<ParamField body="familiarDependiente" type="string" required>
+  Whether the family member is financially dependent on the candidate ("Si" or "No")
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardo familiar !" - Family member saved successfully
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "evalID": "12345",
+  "familiarNombres": "María Elena",
+  "familiarApellidos": "García López",
+  "familiarParentesco": "Esposa",
+  "familiarOcupacion": "Maestra",
+  "familiarEdad": 35,
+  "familiarVive": "Si",
+  "familiarTelefono": "6189876543",
+  "familiarDependiente": "No"
+}
+```
+
+### Notes
+
+The system automatically concatenates `familiarApellidos` and `familiarNombres` to create the full name stored as `familiarNombre` in the database.
+
+---
+
+## Edit Family Member
+
+<api method="POST" path="/editFamiliar" />
+
+Updates information for an existing family member.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  ID of the family member record (note: despite the name, this is the familiarID)
+</ParamField>
+
+<ParamField body="familiarNombre" type="string" required>
+  Full name of the family member
+</ParamField>
+
+<ParamField body="familiarParentesco" type="string" required>
+  Relationship to the candidate
+</ParamField>
+
+<ParamField body="familiarOcupacion" type="string" required>
+  Occupation or profession
+</ParamField>
+
+<ParamField body="familiarEdad" type="integer" required>
+  Age in years
+</ParamField>
+
+<ParamField body="familiarVive" type="string" required>
+  Whether the family member is alive ("Si" or "No")
+</ParamField>
+
+<ParamField body="familiarTelefono" type="string">
+  Contact phone number
+</ParamField>
+
+<ParamField body="familiarDependiente" type="string" required>
+  Whether financially dependent ("Si" or "No")
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Familiar actualizado !" - Family member updated successfully
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "evalID": "67890",
+  "familiarNombre": "García López María Elena",
+  "familiarParentesco": "Esposa",
+  "familiarOcupacion": "Directora de Escuela",
+  "familiarEdad": 36,
+  "familiarVive": "Si",
+  "familiarTelefono": "6189876543",
+  "familiarDependiente": "No"
+}
+```
+
+---
+
+## Delete Family Member
+
+<api method="POST" path="/deleteFamiliar" />
+
+Removes a family member record from the candidate's profile.
+
+### Request Body
+
+<ParamField body="familiarID" type="string" required>
+  ID of the family member record to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Familiar eliminado !" - Family member deleted successfully
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "familiarID": "67890"
+}
+```
+
+---
+
+## Error Responses
+
+All endpoints return the following error response on failure:
+
+<ResponseField name="message" type="string">
+  "Algo salio mal !" - Generic error message indicating something went wrong
+</ResponseField>
+
+The endpoint will redirect back to the previous page with the error message displayed as a flash message.
+
+## Common Relationship Types
+
+Typical values for `familiarParentesco` include:
+
+- **Padre** - Father
+- **Madre** - Mother
+- **Esposo/Esposa** - Spouse
+- **Hijo/Hija** - Son/Daughter
+- **Hermano/Hermana** - Brother/Sister
+- **Abuelo/Abuela** - Grandfather/Grandmother
+- **Tío/Tía** - Uncle/Aunt
+- **Primo/Prima** - Cousin
+- **Suegro/Suegra** - Father-in-law/Mother-in-law
+- **Cuñado/Cuñada** - Brother-in-law/Sister-in-law
+
+## Workflow
+
+1. First, retrieve existing family data using the GET endpoint
+2. Add new family members using the Save endpoint
+3. Edit family member details as needed using the Edit endpoint
+4. Remove family members if necessary using the Delete endpoint
+
+## Best Practices
+
+- Include all immediate family members (parents, siblings, spouse, children)
+- Mark deceased family members with `familiarVive: "No"`
+- Provide contact information for living family members when available
+- Accurately indicate financial dependency status for each family member
+- Verify ages and relationships before saving

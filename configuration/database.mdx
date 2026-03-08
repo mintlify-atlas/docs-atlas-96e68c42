@@ -1,0 +1,344 @@
+---
+title: Database Configuration
+description: MySQL database setup, connection pools, and configuration for vLife DGO
+---
+
+## Overview
+
+vLife DGO uses MySQL as its primary database, with connection pooling provided by the `mysql2` package. The application creates multiple connection pools for different database operations, all configured through environment variables.
+
+## Database Connection Pools
+
+The application establishes two main connection pools defined in `src/database/Connection.js`:
+
+### Primary Pool (PoolvLife)
+
+The main connection pool used for most database operations:
+
+```javascript
+import { createPool } from "mysql2/promise";
+
+export const PoolvLife = createPool({
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASS,
+  port: DB_PORT,
+  database: DB_DATABASE,
+  dateStrings: true,
+});
+```
+
+### Secondary Pool (PoolvLifeV2)
+
+An additional connection pool with identical configuration:
+
+```javascript
+export const PoolvLifeV2 = createPool({
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASS,
+  port: DB_PORT,
+  database: DB_DATABASEV2,
+  dateStrings: true,
+});
+```
+
+<Note>
+  Both pools connect to the same database as `DB_DATABASE` and `DB_DATABASEV2` use the same environment variable. The dual-pool architecture provides flexibility for future database separation.
+</Note>
+
+## Connection Configuration
+
+### Connection Parameters
+
+<ParamField path="host" type="string" required>
+  MySQL server hostname or IP address. Set via `DB_HOST` environment variable.
+</ParamField>
+
+<ParamField path="user" type="string" required>
+  Database username with appropriate privileges. Set via `DB_USER` environment variable.
+</ParamField>
+
+<ParamField path="password" type="string" required>
+  Database user password. Set via `DB_PASS` environment variable.
+</ParamField>
+
+<ParamField path="port" type="number" default="3306">
+  MySQL server port. Set via `DB_PORT` environment variable.
+</ParamField>
+
+<ParamField path="database" type="string" required>
+  Database name (`vlifedgo_db`). Set via `DB_DATABASE` environment variable.
+</ParamField>
+
+<ParamField path="dateStrings" type="boolean" default="true">
+  Forces MySQL date and datetime fields to be returned as strings rather than JavaScript Date objects. This ensures consistent date formatting across the application.
+</ParamField>
+
+## Database Requirements
+
+### MySQL Version
+
+<Steps>
+  <Step title="MySQL 5.7 or higher">
+    vLife DGO requires MySQL 5.7 or higher. MySQL 8.0+ is recommended for optimal performance and security features.
+  </Step>
+  
+  <Step title="UTF-8 Character Set">
+    Ensure the database uses UTF-8 encoding to support special characters in Spanish text:
+    
+    ```sql
+    CREATE DATABASE vlifedgo_db
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+    ```
+  </Step>
+  
+  <Step title="Required Privileges">
+    The database user needs the following privileges:
+    
+    ```sql
+    GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX, ALTER
+    ON vlifedgo_db.* TO 'vlife_user'@'localhost';
+    ```
+  </Step>
+</Steps>
+
+## Database Setup
+
+### Creating the Database
+
+<Steps>
+  <Step title="Connect to MySQL">
+    ```bash
+    mysql -u root -p
+    ```
+  </Step>
+  
+  <Step title="Create the database">
+    ```sql
+    CREATE DATABASE vlifedgo_db
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+    ```
+  </Step>
+  
+  <Step title="Create database user">
+    ```sql
+    CREATE USER 'vlife_user'@'localhost' IDENTIFIED BY 'secure_password';
+    GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, INDEX, ALTER
+    ON vlifedgo_db.* TO 'vlife_user'@'localhost';
+    FLUSH PRIVILEGES;
+    ```
+  </Step>
+  
+  <Step title="Verify connection">
+    ```bash
+    mysql -u vlife_user -p vlifedgo_db
+    ```
+  </Step>
+</Steps>
+
+## Session Database Configuration
+
+The application also exports a session database configuration object:
+
+```javascript
+export const sessionDB = {
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASS,
+  database: DB_DATABASE,
+};
+```
+
+<Note>
+  While this configuration is available for use with `express-mysql-session`, the application currently uses `MemoryStore` for sessions. See [Session Management](/configuration/session-management) for details.
+</Note>
+
+## Connection Pool Best Practices
+
+### Pool Size Configuration
+
+The `mysql2` package uses default pool settings:
+
+- **Connection Limit**: 10 connections (default)
+- **Queue Limit**: 0 (no limit)
+
+For production environments, you may want to customize pool settings:
+
+```javascript
+export const PoolvLife = createPool({
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASS,
+  port: DB_PORT,
+  database: DB_DATABASE,
+  dateStrings: true,
+  connectionLimit: 20,        // Maximum connections in pool
+  queueLimit: 0,              // Maximum queued requests (0 = unlimited)
+  waitForConnections: true,   // Queue requests when no connections available
+  connectTimeout: 10000,      // Connection timeout (10 seconds)
+});
+```
+
+### Using Connection Pools
+
+Import and use the connection pools in your code:
+
+```javascript
+import { PoolvLife } from './database/Connection.js';
+
+// Execute a query
+const [rows] = await PoolvLife.query('SELECT * FROM usuarios WHERE id = ?', [userId]);
+
+// Use connection for multiple queries
+const connection = await PoolvLife.getConnection();
+try {
+  await connection.beginTransaction();
+  await connection.query('INSERT INTO ...');
+  await connection.query('UPDATE ...');
+  await connection.commit();
+} catch (error) {
+  await connection.rollback();
+  throw error;
+} finally {
+  connection.release();
+}
+```
+
+<Warning>
+  Always release connections back to the pool using `connection.release()` to prevent connection leaks. Use try/finally blocks to ensure connections are released even when errors occur.
+</Warning>
+
+## Database Schema
+
+The vLife DGO database includes tables for:
+
+- **usuarios** - User accounts and authentication
+- **evaluaciones** - Background evaluation records
+- **datos_personales** - Personal information
+- **datos_familiares** - Family information
+- **datos_academicos** - Academic history
+- **trayectoria_laboral** - Work history
+- **datos_economicos** - Economic data
+- **referencias** - References
+- **documentos** - Uploaded documents
+- **constancias** - Verification certificates
+
+<Note>
+  Refer to the database migration scripts or schema documentation for complete table definitions and relationships.
+</Note>
+
+## Backup and Maintenance
+
+### Database Backups
+
+Regular backups are essential for data protection:
+
+```bash
+# Create a backup
+mysqldump -u vlife_user -p vlifedgo_db > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Restore from backup
+mysql -u vlife_user -p vlifedgo_db < backup_20240308_120000.sql
+```
+
+### Automated Backup Script
+
+```bash
+#!/bin/bash
+# Save as backup.sh
+
+BACKUP_DIR="/path/to/backups"
+DB_NAME="vlifedgo_db"
+DB_USER="vlife_user"
+DB_PASS="your_password"
+TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+
+mysqldump -u $DB_USER -p$DB_PASS $DB_NAME > $BACKUP_DIR/backup_$TIMESTAMP.sql
+
+# Keep only last 30 days of backups
+find $BACKUP_DIR -name "backup_*.sql" -mtime +30 -delete
+```
+
+<Warning>
+  **Production Backup Strategy:**
+  - Schedule automated daily backups
+  - Store backups in a secure, separate location
+  - Test backup restoration regularly
+  - Implement point-in-time recovery if possible
+  - Monitor backup success and storage capacity
+</Warning>
+
+## Troubleshooting
+
+### Connection Refused
+
+```
+Error: connect ECONNREFUSED 127.0.0.1:3306
+```
+
+**Solutions:**
+- Verify MySQL server is running: `sudo systemctl status mysql`
+- Check firewall settings allow port 3306
+- Verify `DB_HOST` and `DB_PORT` are correct
+
+### Access Denied
+
+```
+Error: Access denied for user 'vlife_user'@'localhost'
+```
+
+**Solutions:**
+- Verify username and password are correct
+- Check user has proper privileges
+- Ensure user can connect from the specified host
+
+### Too Many Connections
+
+```
+Error: Too many connections
+```
+
+**Solutions:**
+- Increase MySQL max_connections setting
+- Reduce connectionLimit in pool configuration
+- Check for connection leaks (unreleased connections)
+
+### Unknown Database
+
+```
+Error: Unknown database 'vlifedgo_db'
+```
+
+**Solutions:**
+- Create the database: `CREATE DATABASE vlifedgo_db;`
+- Verify `DB_DATABASE` environment variable
+- Check database name spelling
+
+## Performance Optimization
+
+### Indexes
+
+Ensure proper indexes exist on frequently queried columns:
+
+```sql
+-- Example indexes for common queries
+CREATE INDEX idx_usuario_email ON usuarios(email);
+CREATE INDEX idx_evaluacion_fecha ON evaluaciones(fecha_creacion);
+CREATE INDEX idx_expediente_usuario ON expedientes(usuario_id);
+```
+
+### Query Optimization
+
+- Use prepared statements (automatically handled by `mysql2`)
+- Avoid SELECT * queries; specify only needed columns
+- Use connection pooling for all database access
+- Enable MySQL query cache if using MySQL 5.7
+
+## Related Documentation
+
+- [Environment Variables](/configuration/environment) - Database connection settings
+- [Session Management](/configuration/session-management) - Session store configuration
+- [Installation Guide](/installation) - Complete setup including database

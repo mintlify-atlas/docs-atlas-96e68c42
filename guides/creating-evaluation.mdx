@@ -1,0 +1,310 @@
+---
+title: Creating an Evaluation
+description: Start a new background evaluation or resume an existing one
+---
+
+## Overview
+
+Once you've registered and logged in, you need to create an evaluation for the current year. This guide explains how evaluations work and how to start or resume one.
+
+<Info>
+The system automatically checks if you already have an evaluation for the current year. You can only have ONE active evaluation per year.
+</Info>
+
+## Understanding Evaluations
+
+### Evaluation Types
+
+vLife DGO supports two types of evaluations:
+
+<CardGroup cols={2}>
+  <Card title="Permanencia" icon="user-check">
+    For **existing employees** undergoing periodic review
+    - Type ID: `1`
+    - Requires 6 data sections + 5 mandatory documents
+    - Includes current position information
+  </Card>
+  
+  <Card title="Nuevo Ingreso" icon="user-plus">
+    For **new hires** joining the organization
+    - Type ID: `2`
+    - Requires 6 data sections + 6 mandatory documents
+    - Focuses on previous employment history
+  </Card>
+</CardGroup>
+
+<Note>
+Your evaluation type was selected during registration. This determines which forms and documents you'll need to complete.
+</Note>
+
+### Evaluation ID Encryption
+
+For security purposes, all evaluation IDs are encrypted:
+
+- The system generates a unique `evalID` when you create an evaluation
+- This ID is encrypted using ncrypt-js with the key `"key_cecc"`
+- The encrypted version (`evalEncrypt`) is used in all URLs
+- This prevents users from accessing other people's evaluations
+
+## Creating Your Evaluation
+
+<Steps>
+  <Step title="Access Your Profile">
+    After logging in, you'll be at `/auth/profile`.
+    
+    The system automatically checks for an active evaluation for the current year by running:
+    ```sql
+    SELECT * FROM tbl_dgo_evaluaciones 
+    WHERE evalAnio = [current_year] 
+    AND empID = [your_id] 
+    AND evalActivo = 1
+    ```
+  </Step>
+
+  <Step title="Start New or Resume Existing">
+    The system will automatically:
+
+    **If NO evaluation exists:**
+    - Show an option to create a new evaluation
+    - Create a new record in `tbl_dgo_evaluaciones`
+    - Generate and encrypt your evaluation ID
+    - Display success message: **"Evaluación creada con exito"**
+    - Redirect you to `/evaluacionvLife/evaluacionView/[encrypted_id]`
+
+    **If evaluation EXISTS:**
+    - Automatically load your existing evaluation
+    - Display success message: **"Retomado evaluación..."**
+    - Redirect you to your evaluation page with the encrypted ID
+  </Step>
+
+  <Step title="View Your Evaluation Dashboard">
+    You'll now see your evaluation dashboard showing:
+    
+    - Progress tracker (percentage complete)
+    - Six data capture sections
+    - Required document uploads
+    - Optional document uploads
+    - Current completion status
+  </Step>
+</Steps>
+
+## Evaluation Dashboard
+
+Your evaluation dashboard displays:
+
+### Progress Tracking
+
+The system calculates your completion percentage:
+
+```javascript
+const ProcessCapture = TotalCaptura * 100 / 6
+```
+
+Where `TotalCaptura` is the count of completed sections:
+- Personal Data (Datos Personales)
+- Family Data (Datos Familiares)
+- Academic Data (Datos Académicos)
+- Career Trajectory (Trayectoria Laboral)
+- Economic Data (Datos Económicos)
+- References (Referencias)
+
+### Six Main Sections
+
+<CardGroup cols={2}>
+  <Card title="1. Personal Data" icon="user" href="/guides/personal-data">
+    Basic personal information, contact details, and address
+  </Card>
+  
+  <Card title="2. Family Data" icon="users" href="/guides/family-data">
+    Information about family members and dependents
+  </Card>
+  
+  <Card title="3. Academic Data" icon="graduation-cap" href="/guides/academic-data">
+    Educational background and training certifications
+  </Card>
+  
+  <Card title="4. Career Trajectory" icon="briefcase" href="/guides/career-trajectory">
+    Employment history and work experience
+  </Card>
+  
+  <Card title="5. Economic Data" icon="dollar-sign" href="/guides/economic-data">
+    Financial information, assets, and liabilities
+  </Card>
+  
+  <Card title="6. References" icon="address-book" href="/guides/references">
+    Professional and personal references
+  </Card>
+</CardGroup>
+
+### Document Requirements
+
+Based on your evaluation type, you'll need to upload:
+
+**Permanencia (5 required documents):**
+- Birth Certificate (Acta de Nacimiento)
+- Official ID (INE)
+- Proof of Address (Comprobante de Domicilio)
+- Proof of Studies (Comprobante de Estudios)
+- Proof of Income (Comprobante de Ingresos)
+
+**Nuevo Ingreso (6 required documents):**
+- Birth Certificate
+- Official ID (INE)
+- Proof of Address
+- Proof of Studies
+- Military Service Card (Cartilla Militar)
+- Proof of Income (or motive description)
+
+See [Document Requirements](/guides/document-requirements) for details.
+
+## Resuming Your Evaluation
+
+You can safely close the browser and return later:
+
+1. Log in to your account
+2. The system automatically loads your current year's evaluation
+3. All previously saved data will be intact
+4. Continue from where you left off
+
+<Warning>
+Data is only saved when you click the save button in each section. Unsaved changes will be lost if you navigate away.
+</Warning>
+
+## Evaluation Status Checks
+
+The system continuously validates:
+
+### For Permanencia:
+```javascript
+if (TotalCaptura === 6 && TotalCargaPerma === 5) {
+  const ListoRevision = true;
+  // You can finalize your evaluation
+}
+```
+
+### For Nuevo Ingreso:
+```javascript
+if (TotalCaptura === 6 && TotalCargaNI === 6) {
+  const ListoRevision = true;
+  // You can finalize your evaluation
+}
+```
+
+<Info>
+Only when ALL sections are complete AND all required documents are uploaded will you be able to finalize and submit your evaluation.
+</Info>
+
+## Managing Your Evaluation
+
+From the evaluation dashboard, you can:
+
+### Edit Sections
+- Click on any section to view/edit the data
+- Make changes and save
+- Return to the dashboard
+
+### Delete Section Data
+- Each section has a delete option
+- Removes all data for that section
+- Allows you to re-enter the information
+- Cannot be undone
+
+<Warning>
+Deleting a section removes ALL data in that section. Use this carefully.
+</Warning>
+
+### Upload Documents
+- Click on any required or optional document
+- Upload files meeting the format requirements
+- View uploaded documents
+- Delete and re-upload if needed
+
+## Viewing Evaluation History
+
+Your profile shows evaluations from previous years:
+
+```sql
+SELECT evaluaciones.evalAnio, t_eval.evalTipo, evaluaciones.evalEncrypt
+FROM tbl_dgo_evaluaciones evaluaciones
+INNER JOIN cat_dgo_tipoeval t_eval ON evaluaciones.tipoEvalID = t_eval.tipoEvalID
+WHERE evaluaciones.evalAnio != [current_year] 
+AND evaluaciones.empID = [your_id]
+```
+
+You can click on previous evaluations to view them (read-only).
+
+## Common Issues
+
+### Can't Create Second Evaluation for Same Year
+
+**Problem:** System says you already have an evaluation.
+
+**Solution:** You can only have one evaluation per year. Resume your existing evaluation instead.
+
+### Evaluation Progress Stuck at 0%
+
+**Problem:** Progress shows 0% even after completing sections.
+
+**Solution:** Make sure you're clicking the save/submit button in each section. Viewing a form doesn't save it.
+
+### Lost Evaluation ID
+
+**Problem:** Don't remember your evaluation URL.
+
+**Solution:** Simply log in to your profile - the system automatically loads your current evaluation.
+
+## Next Steps
+
+Once your evaluation is created, you should complete each section in order:
+
+<Steps>
+  <Step title="Start with Personal Data">
+    Begin by entering your personal information, contact details, and address.
+    
+    [Go to Personal Data Guide →](/guides/personal-data)
+  </Step>
+
+  <Step title="Continue Through All Sections">
+    Complete each of the six sections in sequence.
+  </Step>
+
+  <Step title="Upload Required Documents">
+    Upload all mandatory documents for your evaluation type.
+    
+    [See Document Requirements →](/guides/document-requirements)
+  </Step>
+
+  <Step title="Finalize and Submit">
+    Once 100% complete, finalize your evaluation for review.
+    
+    [Learn How to Finalize →](/guides/finalizing-evaluation)
+  </Step>
+</Steps>
+
+## Technical Details
+
+For reference, here's how evaluations are created:
+
+```javascript
+const [rowsAffected] = await PoolvLife.query(
+  EvaluationvLifeModel.createEvaluacion,
+  [empID, anioEval, tipo_eval]
+);
+
+const dataToEncrypt = rowsAffected.insertId;
+const encryptedData = ncryptObjet.encrypt(dataToEncrypt);
+
+await PoolvLife.query(
+  EvaluationvLifeModel.encryptEvaluation, 
+  [encryptedData, dataToEncrypt]
+);
+```
+
+The evaluation record includes:
+- `evalID` - Unique evaluation ID (auto-increment)
+- `empID` - Your employee ID
+- `evalAnio` - Current year
+- `tipoEvalID` - Evaluation type (1 or 2)
+- `evalEncrypt` - Encrypted ID for URLs
+- `evalActivo` - Active status (1 = active)
+- `evalCreado` - Creation timestamp

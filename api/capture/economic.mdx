@@ -1,0 +1,555 @@
+---
+title: Economic Data Capture
+description: API endpoints for capturing financial information including income, expenses, assets, and liabilities
+---
+
+## Overview
+
+The Economic Data Capture API manages comprehensive financial information for background evaluations. This includes:
+
+- Monthly income and expenses
+- Bank accounts
+- Credit cards and loans
+- Real estate properties (inmuebles)
+- Personal property/vehicles (muebles)
+- Additional income sources
+
+## Authentication
+
+All endpoints require authentication via the `isLoggedIn` middleware. Users must have an active session to access these endpoints.
+
+## Get Economic Data
+
+<api method="GET" path="/economicosCapture/:encryptedData" />
+
+Retrieves all economic and financial data for a specific evaluation.
+
+### Path Parameters
+
+<ParamField path="encryptedData" type="string" required>
+  Encrypted evaluation ID
+</ParamField>
+
+### Response
+
+<ResponseField name="DataEconomicos" type="object">
+  Main economic data including income and expenses
+</ResponseField>
+
+<ResponseField name="GetBancos" type="array">
+  Available banks for selection
+</ResponseField>
+
+<ResponseField name="GetBancosCredito" type="array">
+  Candidate's bank accounts
+</ResponseField>
+
+<ResponseField name="GetCreditos" type="array">
+  Credit cards and loans
+</ResponseField>
+
+<ResponseField name="GetInmuebles" type="array">
+  Real estate properties
+</ResponseField>
+
+<ResponseField name="GetModelos" type="array">
+  Available vehicle models
+</ResponseField>
+
+<ResponseField name="GetMuebles" type="array">
+  Personal property and vehicles
+</ResponseField>
+
+<ResponseField name="GetIngresosExtras" type="array">
+  Additional income sources
+</ResponseField>
+
+---
+
+## Save Economic Data
+
+<api method="POST" path="/SaveEconomicos" />
+
+Saves income and expense information.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+#### Income Information
+
+<ParamField body="economicosMensual" type="number" required>
+  Monthly base salary/income
+</ParamField>
+
+<ParamField body="economicosAdicional" type="number">
+  Additional income amount
+</ParamField>
+
+<ParamField body="economicosConsiste" type="text">
+  Description of what additional income consists of
+</ParamField>
+
+<ParamField body="economicosTotalIngreso" type="number" required>
+  Total monthly income
+</ParamField>
+
+#### Expense Categories
+
+<ParamField body="economicosAlimentos" type="number" required>
+  Food expenses
+</ParamField>
+
+<ParamField body="economicosTransporte" type="number" required>
+  Transportation expenses
+</ParamField>
+
+<ParamField body="economicosServicios" type="number" required>
+  Utilities (water, electricity, gas, etc.)
+</ParamField>
+
+<ParamField body="economicosComunicaciones" type="number" required>
+  Phone, internet, communications
+</ParamField>
+
+<ParamField body="economicosTarjetas" type="number" required>
+  Credit card payments
+</ParamField>
+
+<ParamField body="economicosCreditos" type="number" required>
+  Loan payments
+</ParamField>
+
+<ParamField body="economicosVestido" type="number" required>
+  Clothing expenses
+</ParamField>
+
+<ParamField body="economicosMedico" type="number" required>
+  Medical/health expenses
+</ParamField>
+
+<ParamField body="economicosTandas" type="number" required>
+  Savings circles (tandas)
+</ParamField>
+
+<ParamField body="economicosAhorros" type="number" required>
+  Savings contributions
+</ParamField>
+
+<ParamField body="economicosEscolares" type="number" required>
+  School/education expenses
+</ParamField>
+
+<ParamField body="economicosRenta" type="number" required>
+  Rent or mortgage payment
+</ParamField>
+
+<ParamField body="economicosPension" type="number" required>
+  Pension or alimony payments
+</ParamField>
+
+<ParamField body="economicosFaltante" type="number" required>
+  Other/miscellaneous expenses
+</ParamField>
+
+<ParamField body="economicosTotalEgresos" type="number" required>
+  Total monthly expenses
+</ParamField>
+
+#### Property Information
+
+<ParamField body="economicosTipo" type="string" required>
+  Type of residence ("Propia", "Rentada", "Familiar")
+</ParamField>
+
+<ParamField body="economicosRegimen" type="string" required>
+  Property regime if married ("Sociedad Conyugal", "Separación de Bienes")
+</ParamField>
+
+<ParamField body="economicosProblematica" type="text">
+  Any economic problems or issues
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardaron economicos correctamente !" - Economic data saved successfully
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "evalID": "12345",
+  "economicosMensual": 15000,
+  "economicosAdicional": 2000,
+  "economicosConsiste": "Trabajo independiente fines de semana",
+  "economicosTotalIngreso": 17000,
+  "economicosAlimentos": 4000,
+  "economicosTransporte": 1500,
+  "economicosServicios": 800,
+  "economicosComunicaciones": 600,
+  "economicosTarjetas": 1000,
+  "economicosCreditos": 2000,
+  "economicosVestido": 500,
+  "economicosMedico": 800,
+  "economicosTandas": 500,
+  "economicosAhorros": 1000,
+  "economicosEscolares": 2000,
+  "economicosRenta": 3000,
+  "economicosPension": 0,
+  "economicosFaltante": 500,
+  "economicosTotalEgresos": 18200,
+  "economicosTipo": "Rentada",
+  "economicosRegimen": "Sociedad Conyugal",
+  "economicosProblematica": "Ninguna"
+}
+```
+
+---
+
+## Update Economic Data
+
+<api method="POST" path="/UpdateEconomicos" />
+
+Updates existing economic data. Contains the same fields as SaveEconomicos.
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se actualizarón economicos correctamente !" - Economic data updated successfully
+</ResponseField>
+
+---
+
+## Save Bank Account
+
+<api method="POST" path="/SaveBancos" />
+
+Adds a bank account to the candidate's profile.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="bancosTipo" type="string" required>
+  Account type (e.g., "Cuenta de Ahorro", "Cuenta de Cheques", "Inversión")
+</ParamField>
+
+<ParamField body="bancosInstitucion" type="string" required>
+  Bank name
+</ParamField>
+
+<ParamField body="bancosApertura" type="date" required>
+  Account opening date
+</ParamField>
+
+<ParamField body="bancosMontoApertura" type="number" required>
+  Opening balance
+</ParamField>
+
+<ParamField body="bancosMontoActual" type="number" required>
+  Current balance
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardaron los bancos correctamente !" - Bank account saved
+</ResponseField>
+
+---
+
+## Delete Bank Account
+
+<api method="POST" path="/DeleteBanco" />
+
+### Request Body
+
+<ParamField body="bancosID" type="string" required>
+  Bank account ID to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Cuenta borrada" - Account deleted
+</ResponseField>
+
+---
+
+## Save Credit/Loan
+
+<api method="POST" path="/SaveCreditos" />
+
+Adds a credit card or loan record.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="creditosTipo" type="string" required>
+  Type of credit (e.g., "Tarjeta de Crédito", "Préstamo Personal", "Crédito Automotriz")
+</ParamField>
+
+<ParamField body="creditosInstitucion" type="string" required>
+  Financial institution name
+</ParamField>
+
+<ParamField body="creditosApertura" type="date" required>
+  Date credit was obtained
+</ParamField>
+
+<ParamField body="creditosDeuda" type="number" required>
+  Current debt amount
+</ParamField>
+
+<ParamField body="creditosMensualidad" type="number" required>
+  Monthly payment
+</ParamField>
+
+<ParamField body="creditosPrestamo" type="number" required>
+  Original loan/credit amount
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se guardaron creditos correctamente !" - Credit saved successfully
+</ResponseField>
+
+---
+
+## Delete Credit/Loan
+
+<api method="POST" path="/DeleteCredito" />
+
+### Request Body
+
+<ParamField body="creditosID" type="string" required>
+  Credit ID to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Credito borrado" - Credit deleted
+</ResponseField>
+
+---
+
+## Save Real Estate Property
+
+<api method="POST" path="/SaveInmuebles" />
+
+Adds a real estate property (house, land, commercial property, etc.).
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="inmueblesTipo" type="string" required>
+  Property type (e.g., "Casa", "Terreno", "Departamento", "Local Comercial")
+</ParamField>
+
+<ParamField body="inmueblesFecha" type="date" required>
+  Date of acquisition
+</ParamField>
+
+<ParamField body="inmueblesForma" type="string" required>
+  How acquired (e.g., "Compra", "Herencia", "Donación")
+</ParamField>
+
+<ParamField body="inmueblesUbicacion" type="string" required>
+  Property location/address
+</ParamField>
+
+<ParamField body="inmueblesValorCompra" type="number" required>
+  Purchase value
+</ParamField>
+
+<ParamField body="inmueblesValorActual" type="number" required>
+  Current estimated value
+</ParamField>
+
+<ParamField body="inmueblesDocumento" type="string" required>
+  Documentation (e.g., "Escritura", "Contrato")
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Inmueble guardado !" - Property saved
+</ResponseField>
+
+---
+
+## Delete Real Estate Property
+
+<api method="POST" path="/DeleteInmueble" />
+
+### Request Body
+
+<ParamField body="inmueblesID" type="string" required>
+  Property ID to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Inmueble borrado" - Property deleted
+</ResponseField>
+
+---
+
+## Save Personal Property
+
+<api method="POST" path="/SaveMuebles" />
+
+Adds personal property such as vehicles, equipment, etc.
+
+### Request Body
+
+The request accepts the complete object from the form. Common fields include:
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="mueblesTipo" type="string" required>
+  Type of property (e.g., "Vehículo", "Motocicleta", "Equipo")
+</ParamField>
+
+<ParamField body="mueblesMarca" type="string">
+  Brand
+</ParamField>
+
+<ParamField body="mueblesModelo" type="string">
+  Model
+</ParamField>
+
+<ParamField body="mueblesAnio" type="integer">
+  Year
+</ParamField>
+
+<ParamField body="mueblesValor" type="number">
+  Current value
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Bien mueble guardado !" - Personal property saved
+</ResponseField>
+
+---
+
+## Delete Personal Property
+
+<api method="POST" path="/DeleteMueble" />
+
+### Request Body
+
+<ParamField body="muebles" type="string" required>
+  Property ID to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Mueble borrado" - Property deleted
+</ResponseField>
+
+---
+
+## Save Additional Income
+
+<api method="POST" path="/SaveIngresoExtra" />
+
+Adds an additional income source.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID
+</ParamField>
+
+<ParamField body="ingresoextraNombre" type="string" required>
+  Name/description of the income source
+</ParamField>
+
+<ParamField body="ingresoextraCantidad" type="number" required>
+  Monthly income amount from this source
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Ingreso extra guardado !" - Additional income saved
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "evalID": "12345",
+  "ingresoextraNombre": "Renta de propiedad",
+  "ingresoextraCantidad": 3000
+}
+```
+
+---
+
+## Delete Additional Income
+
+<api method="POST" path="/DeleteIngresoExtra" />
+
+### Request Body
+
+<ParamField body="ingresoextraID" type="string" required>
+  Income record ID to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Ingreso extra borrado" - Additional income deleted
+</ResponseField>
+
+---
+
+## Error Responses
+
+All endpoints return:
+
+<ResponseField name="message" type="string">
+  "Algo salio mal !" - Generic error message
+</ResponseField>
+
+## Workflow
+
+1. Retrieve existing economic data using GET endpoint
+2. Save or update main economic data (income/expenses)
+3. Add bank accounts
+4. Add credits/loans
+5. Add real estate properties
+6. Add personal property (vehicles, etc.)
+7. Add additional income sources
+8. Delete records as needed
+
+## Best Practices
+
+- Ensure total income equals the sum of base salary and additional income
+- Total expenses should equal the sum of all expense categories
+- Update bank account balances regularly
+- Include all debts and liabilities
+- Document all significant assets
+- Verify all financial information is accurate and current

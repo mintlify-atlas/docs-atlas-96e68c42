@@ -1,0 +1,198 @@
+---
+title: 'Document Validation'
+description: 'Validate certificates and documents using QR codes'
+---
+
+## Validate Certificate by QR Code
+
+<RequestExample>
+```bash GET /Validator/ConstanciaValidator/:cadena
+curl -X GET https://api.vlife-dgo.com/Validator/ConstanciaValidator/U2FsdGVkX1...
+```
+</RequestExample>
+
+Validates a certificate (constancia) by decrypting a QR code string and retrieving the associated certificate data.
+
+### Endpoint
+
+```
+GET /Validator/ConstanciaValidator/:cadena
+```
+
+### Authentication
+
+This endpoint uses the `isNotLoggedIn` middleware - it is accessible to external users without authentication, allowing public validation of certificates via QR codes.
+
+### Path Parameters
+
+<ParamField path="cadena" type="string" required>
+  Encrypted validation string from the QR code. This string is encrypted using ncrypt-js and contains the evaluation ID.
+</ParamField>
+
+### Validation Workflow
+
+1. **QR Code Scan**: User scans QR code on certificate
+2. **URL Redirect**: QR code contains URL with encrypted string
+3. **Decryption**: Server decrypts the string using ncrypt-js to extract evalID
+4. **Data Retrieval**: Certificate data is fetched from database
+5. **Display**: Validation view shows certificate details and authenticity
+
+### Response
+
+Returns an HTML view (`constanciaViews/constanciaValidatorView`) with employee and certificate information.
+
+<ResponseField name="Employee" type="object">
+  Employee and certificate validation data.
+  
+  <Expandable title="Employee Object Properties">
+    <ResponseField name="empNombreCompleto" type="string">
+      Full name of the employee.
+    </ResponseField>
+    
+    <ResponseField name="empRFC" type="string">
+      Employee's RFC (tax ID).
+    </ResponseField>
+    
+    <ResponseField name="empCURP" type="string">
+      Employee's CURP (national ID).
+    </ResponseField>
+    
+    <ResponseField name="evalTipo" type="string">
+      Type of evaluation (e.g., "Nuevo Ingreso", "Permanente").
+    </ResponseField>
+    
+    <ResponseField name="constanciaValidacion" type="string">
+      The validation string used to verify the certificate.
+    </ResponseField>
+    
+    <ResponseField name="constanciaCreado" type="datetime">
+      Timestamp when the certificate was created.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Database Query
+
+The validation query joins multiple tables to retrieve comprehensive certificate information:
+
+```sql
+SELECT empleados.empNombreCompleto, empleados.empRFC, empleados.empCURP,
+  tipoEval.evalTipo, constancias.constanciaValidacion, constancias.constanciaCreado
+FROM tbl_dgo_constancias constancias
+INNER JOIN tbl_dgo_evaluaciones evaluaciones 
+  ON evaluaciones.evalID = constancias.evalID
+INNER JOIN cat_dgo_empleados empleados 
+  ON empleados.empID = evaluaciones.empID
+INNER JOIN cat_dgo_tipoeval tipoEval 
+  ON tipoEval.tipoEvalID = evaluaciones.tipoEvalID
+WHERE evaluaciones.evalID = ? AND constancias.constanciaActivo = 1
+```
+
+### Encryption Details
+
+**Library**: ncrypt-js
+
+**Encryption Process**:
+```javascript
+const ncryptObjet = new ncrypt(keyDecrypt.key);
+const decryptedData = ncryptObjet.decrypt(cadena);
+```
+
+The encrypted `cadena` parameter contains the evaluation ID, which is decrypted server-side using a secret key from the connection configuration.
+
+### Response Examples
+
+**Valid Certificate**
+
+Displays validation view with:
+- Employee full name
+- RFC and CURP identifiers  
+- Evaluation type
+- Certificate issuance date
+- Validation confirmation message
+
+**Invalid Certificate**
+
+If decryption fails or no matching active certificate is found:
+
+```json
+{
+  "flash": {
+    "message": "Algo salio mal !"
+  },
+  "redirect": "back"
+}
+```
+
+### Error Handling
+
+<ResponseField name="error" type="object">
+  Error scenarios and responses.
+  
+  <Expandable title="Error Cases">
+    **Invalid Encrypted String**
+    - Occurs when the cadena parameter cannot be decrypted
+    - Returns flash message and redirects back
+    
+    **Certificate Not Found**
+    - Occurs when evalID doesn't exist or certificate is inactive (constanciaActivo = 0)
+    - Returns flash message and redirects back
+    
+    **Database Error**
+    - Occurs on connection or query failures
+    - Logged to console and returns generic error message
+  </Expandable>
+</ResponseField>
+
+### Security Considerations
+
+<Note>
+  - The endpoint is intentionally public to allow certificate validation by third parties
+  - Encryption prevents tampering with evaluation IDs in URLs
+  - Only active certificates (constanciaActivo = 1) can be validated
+  - No sensitive data beyond basic employee identifiers is exposed
+</Note>
+
+### Integration Example
+
+When generating a certificate, the QR code is created as follows:
+
+```javascript
+import qrcode from 'qrcode';
+import ncrypt from 'ncrypt-js';
+
+// Encrypt the evaluation ID
+const ncryptObjet = new ncrypt(secretKey);
+const encryptedData = ncryptObjet.encrypt(evalID.toString());
+
+// Generate validation URL
+const validationURL = `https://api.vlife-dgo.com/Validator/ConstanciaValidator/${encryptedData}`;
+
+// Create QR code
+const qrCodeImage = await qrcode.toDataURL(validationURL);
+```
+
+### Use Cases
+
+1. **Public Verification**: External organizations scan QR codes to verify employee certificates
+2. **Authenticity Check**: Confirms certificate was issued by CEACC Durango  
+3. **Anti-Fraud**: Prevents forged or altered certificates
+4. **Audit Trail**: Provides timestamp of certificate creation
+
+---
+
+## Validation Status Indicators
+
+<ResponseField name="status" type="string">
+  The validation system provides visual indicators:
+  
+  - **Valid**: Certificate found, active, and verified
+  - **Invalid**: Certificate not found or inactive
+  - **Error**: System error during validation
+</ResponseField>
+
+### Related Endpoints
+
+See also:
+- [Generate Certificate](/api/reports/certificate) - Create certificates with QR codes
+- [View Certificate](/api/reports/certificate#view-certificate) - Display certificate before printing

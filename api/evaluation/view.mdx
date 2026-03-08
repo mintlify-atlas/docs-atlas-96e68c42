@@ -1,0 +1,387 @@
+---
+title: 'View Evaluation'
+description: 'Retrieve complete evaluation data including personal, family, academic, work history, economic, and reference information'
+---
+
+## Endpoint
+
+```
+GET /evaluacionvLife/evaluacionView/:encryptedData
+```
+
+## Description
+
+Retrieves all data associated with an employee evaluation, including personal information, family details, academic background, work history, economic data, references, and document upload status. The response structure varies based on the evaluation type (Permanencia vs. Nuevo Ingreso).
+
+## Authentication
+
+This endpoint requires session-based authentication via the `isLoggedIn` middleware. Users must be authenticated before accessing this endpoint.
+
+## URL Parameters
+
+<ParamField path="encryptedData" type="string" required>
+  The encrypted evaluation ID obtained from the [Create Evaluation](/api/evaluation/create) endpoint. This value is generated using `ncrypt-js` with the key `"key_cecc"`.
+</ParamField>
+
+## Response Structure
+
+The endpoint renders a view with comprehensive evaluation data. The data structure includes:
+
+### Core Evaluation Data
+
+<ResponseField name="dataEvaluation" type="object">
+  Core evaluation information
+  
+  <Expandable title="properties">
+    <ResponseField name="evalID" type="integer">
+      Unique evaluation identifier
+    </ResponseField>
+    
+    <ResponseField name="evalEncrypt" type="string">
+      Encrypted evaluation ID for secure URL references
+    </ResponseField>
+    
+    <ResponseField name="tipoEvalID" type="integer">
+      Evaluation type: `1` (Permanencia) or `2` (Nuevo Ingreso)
+    </ResponseField>
+    
+    <ResponseField name="evalTipo" type="string">
+      Evaluation type description
+    </ResponseField>
+    
+    <ResponseField name="empNombreCompleto" type="string">
+      Employee's full name
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Section Data Collections
+
+<ResponseField name="datosPersonales" type="array">
+  Personal information data (latest active record)
+</ResponseField>
+
+<ResponseField name="datosFamiliares" type="array">
+  Family member information (latest active record)
+</ResponseField>
+
+<ResponseField name="datosAcademicos" type="array">
+  Academic background and education history
+</ResponseField>
+
+<ResponseField name="trayectoria" type="array">
+  Work history and career trajectory
+  - For Permanencia (tipo_eval = 1): Uses `tbl_dgo_trayectoria`
+  - For Nuevo Ingreso (tipo_eval = 2): Uses `tbl_dgo_trayectoriani`
+</ResponseField>
+
+<ResponseField name="datosEconomicos" type="array">
+  Economic and financial information (latest active record)
+</ResponseField>
+
+<ResponseField name="datosReferencias" type="array">
+  Personal and professional references (latest active record)
+</ResponseField>
+
+### Document Status
+
+<ResponseField name="getDocumentosObligatorios" type="array">
+  List of required documents for this evaluation type
+</ResponseField>
+
+<ResponseField name="getDocumentosOpcionales" type="array">
+  List of optional documents for this evaluation type
+</ResponseField>
+
+### Progress Tracking
+
+<ResponseField name="TotalCaptura" type="integer">
+  Number of completed data sections (out of 6 total sections)
+  - Personal Data
+  - Family Data
+  - Academic Data
+  - Work History
+  - Economic Data
+  - References
+</ResponseField>
+
+<ResponseField name="ProcessCaptureFormat" type="string">
+  Formatted completion percentage for data capture (e.g., "83.33")
+</ResponseField>
+
+<ResponseField name="ListoRevision" type="boolean" optional>
+  Indicates if evaluation is ready for review. Present only when all requirements are met:
+  - **Permanencia**: All 6 sections complete + 5 required documents uploaded
+  - **Nuevo Ingreso**: All 6 sections complete + 7 required documents uploaded
+</ResponseField>
+
+## Evaluation Type Differences
+
+### Permanencia (tipo_eval = 1)
+
+<Info>
+  For permanent employee evaluations, the system requires:
+  - 6 completed data sections
+  - 5 mandatory document uploads
+</Info>
+
+#### Required Documents (Permanencia)
+
+<ResponseField name="ActaPerma" type="object">
+  Birth certificate (documentoID: 10)
+</ResponseField>
+
+<ResponseField name="INE" type="object">
+  Official identification (documentoID: 11)
+</ResponseField>
+
+<ResponseField name="Docmicilio" type="object">
+  Proof of address (documentoID: 12)
+</ResponseField>
+
+<ResponseField name="Estudios" type="object">
+  Education certificates (documentoID: 13)
+</ResponseField>
+
+<ResponseField name="Ingresos" type="object">
+  Proof of income (documentoID: 14)
+</ResponseField>
+
+#### Optional Documents (Permanencia)
+
+<ResponseField name="Cuenta" type="object">
+  Bank account statements (documentoID: 15)
+</ResponseField>
+
+<ResponseField name="Cartilla" type="object">
+  Military service card (documentoID: 16)
+</ResponseField>
+
+<ResponseField name="Credito" type="object">
+  Credit bureau report (documentoID: 17)
+</ResponseField>
+
+### Nuevo Ingreso (tipo_eval = 2)
+
+<Info>
+  For new hire evaluations, the system requires:
+  - 6 completed data sections
+  - 7 mandatory document uploads (includes motivation letter)
+</Info>
+
+#### Required Documents (Nuevo Ingreso)
+
+<ResponseField name="Acta" type="object">
+  Birth certificate (documentoID: 1)
+</ResponseField>
+
+<ResponseField name="INE" type="object">
+  Official identification (documentoID: 2)
+</ResponseField>
+
+<ResponseField name="Domicilio" type="object">
+  Proof of address (documentoID: 5)
+</ResponseField>
+
+<ResponseField name="Estudios" type="object">
+  Education certificates (documentoID: 6)
+</ResponseField>
+
+<ResponseField name="Cartilla" type="object">
+  Military service card (documentoID: 7)
+</ResponseField>
+
+<ResponseField name="IngresosOpc" type="object">
+  Proof of income (documentoID: 8)
+</ResponseField>
+
+<ResponseField name="Motivo" type="object">
+  Letter of motivation for joining (from `tbl_dgo_motivos_ingresos`)
+</ResponseField>
+
+<ResponseField name="Credito" type="object">
+  Credit bureau report (documentoID: 17)
+</ResponseField>
+
+#### Optional Documents (Nuevo Ingreso)
+
+<ResponseField name="CuentasOps" type="object">
+  Bank account statements (documentoID: 9)
+</ResponseField>
+
+### Common Optional Documents (Both Types)
+
+<ResponseField name="CuentaDepa" type="object">
+  Department account (documentoID: 19)
+</ResponseField>
+
+<ResponseField name="Buro" type="object">
+  Credit bureau (documentoID: 17)
+</ResponseField>
+
+<ResponseField name="PagoPareja" type="object">
+  Spouse payment proof (documentoID: 20)
+</ResponseField>
+
+<ResponseField name="Fachada" type="object">
+  Property facade photo (documentoID: 28)
+</ResponseField>
+
+<ResponseField name="Inmuebles" type="object">
+  Property documentation (documentoID: 29)
+</ResponseField>
+
+<ResponseField name="Arma" type="object">
+  Weapon permit (documentoID: 30)
+</ResponseField>
+
+<ResponseField name="TarjetaCirculacion" type="object">
+  Vehicle registration card (documentoID: 31)
+</ResponseField>
+
+<ResponseField name="Procedimientos" type="object">
+  Legal proceedings documentation (documentoID: 32)
+</ResponseField>
+
+<ResponseField name="ActividadesInformales" type="object">
+  Informal activities declaration (documentoID: 33)
+</ResponseField>
+
+<ResponseField name="FotoEvaluado" type="object">
+  Employee photo (documentoID: 34)
+</ResponseField>
+
+### Additional Fields
+
+<ResponseField name="Permanencia" type="boolean">
+  Set to `true` for Permanencia evaluations (tipo_eval = 1)
+</ResponseField>
+
+<ResponseField name="NI" type="boolean">
+  Set to `true` for Nuevo Ingreso evaluations (tipo_eval = 2)
+</ResponseField>
+
+<ResponseField name="Genero" type="boolean">
+  Gender flag: `true` if employee gender is "MUJER" (female)
+</ResponseField>
+
+## Database Operations
+
+### Primary Queries
+
+<Expandable title="getEvaluationProcess">
+```sql
+SELECT usuarios.empNombreCompleto, t_eval.evalTipo, 
+       evaluaciones.evalEncrypt, evaluaciones.evalID, evaluaciones.tipoEvalID
+FROM tbl_dgo_evaluaciones evaluaciones
+INNER JOIN cat_dgo_tipoeval t_eval ON evaluaciones.tipoEvalID = t_eval.tipoEvalID
+INNER JOIN cat_dgo_empleados usuarios ON usuarios.empID = evaluaciones.empID
+WHERE evaluaciones.evalID = ? AND evaluaciones.evalActivo = 1;
+```
+</Expandable>
+
+<Expandable title="Data Section Queries">
+Each section query retrieves the latest active record:
+
+```sql
+-- Personal Data
+SELECT * FROM tbl_dgo_personalesperma 
+WHERE evalID = ? AND personalesActivo = 1 
+ORDER BY personalesCreado DESC LIMIT 1;
+
+-- Family Data
+SELECT * FROM tbl_dgo_familiares 
+WHERE evalID = ? AND familiarActivo = 1 
+ORDER BY familiarCreado DESC LIMIT 1;
+
+-- Academic Data
+SELECT * FROM tbl_dgo_academicos
+WHERE evalID = ? AND academicoActivo = 1;
+
+-- Work History (Permanencia)
+SELECT * FROM tbl_dgo_trayectoria
+WHERE evalID = ? AND trayectoriaActivo = 1 
+ORDER BY trayectoriaCreado DESC LIMIT 1;
+
+-- Work History (Nuevo Ingreso)
+SELECT * FROM tbl_dgo_trayectoriani
+WHERE evalID = ? AND trayectoriaActivo = 1 
+ORDER BY trayectoriaCreado DESC LIMIT 1;
+
+-- Economic Data
+SELECT * FROM tbl_dgo_economicos
+WHERE evalID = ? AND economicosActivo = 1 
+ORDER BY economicosCreado DESC LIMIT 1;
+
+-- References
+SELECT * FROM tbl_dgo_referencias 
+WHERE evalID = ? AND referenciasActivo = 1 
+ORDER BY referenciasCreado DESC LIMIT 1;
+```
+</Expandable>
+
+<Expandable title="Document Upload Queries">
+Document uploads are retrieved using:
+
+```sql
+SELECT * FROM tbl_dgo_uploads 
+WHERE evalID = ? 
+  AND documentoID = ? 
+  AND uploadActivo = 1 
+ORDER BY uploadCreado DESC 
+LIMIT 1
+```
+
+Each document type has a specific `documentoID` value.
+</Expandable>
+
+## Example Request
+
+```bash
+curl -X GET https://your-domain.com/evaluacionvLife/evaluacionView/U2FsdGVkX1+abc123... \
+  -H "Cookie: connect.sid=your-session-cookie"
+```
+
+## Completion Criteria
+
+### Ready for Review (Permanencia)
+
+<Check>
+  - All 6 data sections completed (Personal, Family, Academic, Work, Economic, References)
+  - Birth certificate uploaded
+  - Official ID uploaded
+  - Proof of address uploaded
+  - Education certificates uploaded
+  - Proof of income uploaded
+</Check>
+
+### Ready for Review (Nuevo Ingreso)
+
+<Check>
+  - All 6 data sections completed (Personal, Family, Academic, Work, Economic, References)
+  - Birth certificate uploaded
+  - Official ID uploaded
+  - Proof of address uploaded
+  - Education certificates uploaded
+  - Military service card uploaded
+  - Proof of income uploaded
+  - Letter of motivation submitted
+  - Credit bureau report uploaded
+</Check>
+
+## Important Notes
+
+<Warning>
+  - The encrypted evaluation ID must be valid and decryptable using the key `"key_cecc"`
+  - Only the most recent active record is retrieved for each data section (except academic data which retrieves all records)
+  - Document upload status affects the `ListoRevision` flag and ability to finalize the evaluation
+</Warning>
+
+<Info>
+  The progress percentage (`ProcessCaptureFormat`) is calculated as: `(TotalCaptura / 6) * 100`
+</Info>
+
+## Related Endpoints
+
+- [Create Evaluation](/api/evaluation/create) - Create or resume an evaluation
+- [Finalize Evaluation](/api/evaluation/finalize) - Mark evaluation as complete

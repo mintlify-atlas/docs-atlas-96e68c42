@@ -1,0 +1,175 @@
+---
+title: User Registration
+description: Learn how to register and create your vLife DGO account
+---
+
+## Overview
+
+Before you can begin your employee background evaluation, you must first register for a vLife DGO account. This guide walks you through the registration process step by step.
+
+<Note>
+You can only create ONE account per employee. If you already have an account, proceed to [sign in and create an evaluation](/guides/creating-evaluation) instead.
+</Note>
+
+## Before You Begin
+
+Gather the following information before starting your registration:
+
+- **Full Name** (as it appears on official documents)
+- **RFC** (with homoclave)
+- **Email Address** (this will be your username)
+- **Gender** (Hombre/Mujer)
+- **Evaluation Type** (Permanencia or Nuevo Ingreso)
+- **Evaluation Motive** (reason for the evaluation)
+- **Dependency** (your government agency or department)
+
+<Warning>
+Your email address will become your username and cannot be changed later. Make sure to use an email you have regular access to.
+</Warning>
+
+## Registration Steps
+
+<Steps>
+  <Step title="Access the Registration Page">
+    Navigate to the vLife DGO registration page at `/auth/signup`.
+    
+    If you're already logged in to an existing account, you'll be redirected to your profile automatically.
+  </Step>
+
+  <Step title="Complete Personal Information">
+    Fill in the following required fields:
+
+    **Nombre Completo** (`empNombreCompleto`)
+    - Enter your full legal name exactly as it appears on your RFC
+    - Include all surnames
+
+    **RFC (con homoclave)** (`empRFC`)
+    - Enter your complete RFC including the homoclave
+    - Format: 13 characters (e.g., ABCD850101XYZ)
+
+    **Selecciona Sexo** (`empSexo`)
+    - Select from dropdown: HOMBRE or MUJER
+    - This field is used for document requirements
+  </Step>
+
+  <Step title="Set Up Login Credentials">
+    **Usuario** (`empUsuario`)
+    - Enter a valid email address
+    - This will be your login username
+    - Must be unique in the system
+
+    **Contraseña** (`empContrasenia`)
+    - Choose a secure password
+    - The system will encrypt your password using bcrypt
+    - Remember this password - password recovery is limited
+  </Step>
+
+  <Step title="Specify Evaluation Details">
+    **Tipo de Evaluación** (`empTipoEval`)
+    - Enter the type of evaluation:
+      - `1` = Permanencia (existing employees)
+      - `2` = Nuevo Ingreso (new hires)
+
+    **Motivo de Evaluación** (`empMotivo`)
+    - Describe the reason for your evaluation
+    - Examples: "Promoción", "Ingreso", "Renovación"
+
+    **Dependencia** (`empDependencia`)
+    - Enter your government agency or department name
+    - Example: "Secretaría de Seguridad Pública"
+  </Step>
+
+  <Step title="Submit Registration">
+    Click the **"Registrar usuario"** button to create your account.
+
+    <Info>
+    The system will check if your username (email) already exists. If it does, you'll see an error message: "Este usuario ya existe!"
+    </Info>
+
+    Upon successful registration, you'll see: **"Usuario guardado!"**
+  </Step>
+</Steps>
+
+## First Login
+
+After successful registration:
+
+1. Navigate to the sign-in page at `/auth/signin`
+2. Enter your email (Usuario) and password (Contraseña)
+3. Click sign in
+4. You'll be redirected to your profile page at `/auth/profile`
+5. You'll see a success message: **"Nuevo inicio de sesión!"**
+
+## What Happens Next
+
+Once logged in, you'll see your profile dashboard where you can:
+
+- View your basic employee information (Name, RFC, Email)
+- See if you have an active evaluation for the current year
+- Create a new evaluation if none exists
+- Resume an existing evaluation if one is in progress
+- View your evaluation history from previous years
+
+<Note>
+Your evaluation type (Permanencia vs Nuevo Ingreso) determines which documents you'll need to upload and which sections you'll complete. This was set during registration.
+</Note>
+
+## Common Issues
+
+### "Este usuario ya existe!"
+
+**Problem:** The email address you entered is already registered.
+
+**Solution:** 
+- Use a different email address, or
+- If you forgot your password, contact your system administrator
+- If you already have an account, go to the sign-in page instead
+
+### "Usuario no valido"
+
+**Problem:** Login credentials are incorrect.
+
+**Solution:**
+- Double-check your email address (it's case-sensitive)
+- Verify your password
+- Ensure your account is active (`empActivo = 1`)
+
+### Redirected to Profile Instead of Registration
+
+**Problem:** You're already logged in.
+
+**Solution:**
+- Log out first if you need to create a different account
+- Use the profile page to manage your existing account
+
+## Next Steps
+
+After registering and logging in, proceed to:
+
+<Card title="Create Your Evaluation" icon="clipboard-list" href="/guides/creating-evaluation">
+  Learn how to start a new evaluation for the current year
+</Card>
+
+## Field Reference
+
+For developers or technical staff, here are the actual field names used in the system:
+
+| Display Name | Field Name | Type | Required | Notes |
+|--------------|------------|------|----------|-------|
+| Nombre Completo | `empNombreCompleto` | text | Yes | Full legal name |
+| RFC | `empRFC` | text | Yes | 13 characters with homoclave |
+| Sexo | `empSexo` | select | Yes | HOMBRE or MUJER |
+| Usuario | `empUsuario` | email | Yes | Becomes username |
+| Contraseña | `empContrasenia` | password | Yes | Encrypted with bcrypt |
+| Tipo de Evaluación | `empTipoEval` | text | Yes | 1=Permanencia, 2=Nuevo Ingreso |
+| Motivo | `empMotivo` | text | Yes | Reason for evaluation |
+| Dependencia | `empDependencia` | text | Yes | Government agency |
+
+## Data Privacy
+
+Your information is securely stored in the system:
+
+- Passwords are encrypted using bcrypt with 10 salt rounds
+- User accounts are stored in the `cat_dgo_empleados` table
+- Only active accounts (`empActivo = 1`) can log in
+- Your evaluation ID will be encrypted when created for security

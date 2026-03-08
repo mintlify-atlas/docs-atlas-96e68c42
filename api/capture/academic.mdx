@@ -1,0 +1,324 @@
+---
+title: Academic Data Capture
+description: API endpoints for capturing and managing educational background and training certifications
+---
+
+## Overview
+
+The Academic Data Capture API manages educational credentials and professional training records. This includes formal academic degrees and additional training courses (capacitaciones). Each candidate can have multiple academic degrees and training certifications.
+
+## Authentication
+
+All endpoints require authentication via the `isLoggedIn` middleware. Users must have an active session to access these endpoints.
+
+## Get Academic Data
+
+<api method="GET" path="/AcademicosCapturePermanencia/:encryptedData" />
+
+Retrieves academic history and training records for a specific evaluation.
+
+### Path Parameters
+
+<ParamField path="encryptedData" type="string" required>
+  Encrypted evaluation ID that uniquely identifies the candidate's evaluation record
+</ParamField>
+
+### Response
+
+Returns a view with the following data:
+
+<ResponseField name="dataGradoAcademico" type="object">
+  The candidate's highest academic degree record
+</ResponseField>
+
+<ResponseField name="GetCapacitacion" type="array">
+  Array of training/certification records (capacitaciones)
+</ResponseField>
+
+---
+
+## Save Academic Degree
+
+<api method="POST" path="/SaveAcademicosPermanencia" />
+
+Saves the candidate's highest academic degree information.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID for the candidate
+</ParamField>
+
+<ParamField body="academicoUltimoGrado" type="string" required>
+  Highest academic degree obtained (e.g., "Secundaria", "Preparatoria", "Licenciatura", "Maestría", "Doctorado")
+</ParamField>
+
+<ParamField body="academicoPeriodoInicio" type="date" required>
+  Start date of the academic program
+</ParamField>
+
+<ParamField body="academicoPeriodoFinal" type="date" required>
+  End date or graduation date
+</ParamField>
+
+<ParamField body="academicoInstitucion" type="string" required>
+  Name of the educational institution
+</ParamField>
+
+<ParamField body="academicoDocumento" type="string" required>
+  Type of credential or document (e.g., "Título", "Cédula Profesional", "Certificado")
+</ParamField>
+
+<ParamField body="academicoUbicacion" type="string" required>
+  Location of the educational institution (city, state)
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Último grado académico guardado" - Academic degree saved successfully
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "evalID": "12345",
+  "academicoUltimoGrado": "Licenciatura en Criminología",
+  "academicoPeriodoInicio": "2010-08-15",
+  "academicoPeriodoFinal": "2014-06-30",
+  "academicoInstitucion": "Universidad Juárez del Estado de Durango",
+  "academicoDocumento": "Cédula Profesional",
+  "academicoUbicacion": "Durango, Durango"
+}
+```
+
+---
+
+## Update Academic Degree
+
+<api method="POST" path="/UpdateGradoAcademico" />
+
+Updates existing academic degree information.
+
+### Request Body
+
+<ParamField body="academicoID" type="string" required>
+  ID of the academic record to update
+</ParamField>
+
+<ParamField body="academicoUltimoGrado" type="string" required>
+  Highest academic degree
+</ParamField>
+
+<ParamField body="academicoPeriodoInicio" type="date" required>
+  Start date of the program
+</ParamField>
+
+<ParamField body="academicoPeriodoFinal" type="date" required>
+  End date or graduation date
+</ParamField>
+
+<ParamField body="academicoInstitucion" type="string" required>
+  Educational institution name
+</ParamField>
+
+<ParamField body="academicoDocumento" type="string" required>
+  Type of credential
+</ParamField>
+
+<ParamField body="academicoUbicacion" type="string" required>
+  Institution location
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se actualizo grado academico" - Academic degree updated successfully
+</ResponseField>
+
+---
+
+## Delete Academic Degree
+
+<api method="POST" path="/DeleteGradoAcademico" />
+
+Deletes an academic degree record.
+
+### Request Body
+
+<ParamField body="academicoID" type="string" required>
+  ID of the academic record to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se eliminó grado academico" - Academic degree deleted successfully
+</ResponseField>
+
+---
+
+## Save Training Certification
+
+<api method="POST" path="/SaveCapacitacionPermanencia" />
+
+Adds a professional training course or certification.
+
+### Request Body
+
+<ParamField body="evalID" type="string" required>
+  Evaluation ID for the candidate
+</ParamField>
+
+<ParamField body="capacitacionDetalle" type="string" required>
+  Detailed description of the training course or certification
+</ParamField>
+
+<ParamField body="capacitacionInicio" type="date" required>
+  Start date of the training
+</ParamField>
+
+<ParamField body="capacitacionFinal" type="date" required>
+  End date or completion date
+</ParamField>
+
+<ParamField body="capacitacionInstitucion" type="string" required>
+  Name of the training institution or organization
+</ParamField>
+
+<ParamField body="capacitacionDocumento" type="string" required>
+  Type of certification or document received (e.g., "Diploma", "Constancia", "Certificado")
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Capacitación guardada !" - Training certification saved successfully
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "evalID": "12345",
+  "capacitacionDetalle": "Curso de Investigación Criminal",
+  "capacitacionInicio": "2020-02-01",
+  "capacitacionFinal": "2020-03-15",
+  "capacitacionInstitucion": "Centro Nacional de Capacitación",
+  "capacitacionDocumento": "Constancia"
+}
+```
+
+---
+
+## Edit Training Certification
+
+<api method="POST" path="/EditCapacitacion" />
+
+Updates an existing training certification record.
+
+### Request Body
+
+<ParamField body="capacitacionID" type="string" required>
+  ID of the training record to update
+</ParamField>
+
+<ParamField body="capacitacionDetalle" type="string" required>
+  Detailed description of the training
+</ParamField>
+
+<ParamField body="capacitacionInicio" type="date" required>
+  Start date
+</ParamField>
+
+<ParamField body="capacitacionFinal" type="date" required>
+  End date
+</ParamField>
+
+<ParamField body="capacitacionInstitucion" type="string" required>
+  Training institution name
+</ParamField>
+
+<ParamField body="capacitacionDocumento" type="string" required>
+  Type of certification received
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se actualizó capacitación" - Training certification updated successfully
+</ResponseField>
+
+---
+
+## Delete Training Certification
+
+<api method="POST" path="/DeleteCapacitacion" />
+
+Removes a training certification record.
+
+### Request Body
+
+<ParamField body="capacitacionID" type="string" required>
+  ID of the training record to delete
+</ParamField>
+
+### Response
+
+<ResponseField name="success" type="string">
+  "Se eliminó capacitación" - Training certification deleted successfully
+</ResponseField>
+
+### Example Request
+
+```json
+{
+  "capacitacionID": "78901"
+}
+```
+
+---
+
+## Error Responses
+
+All endpoints return the following error response on failure:
+
+<ResponseField name="message" type="string">
+  "Algo salio mal !" - Generic error message indicating something went wrong
+</ResponseField>
+
+The endpoint will redirect back to the previous page with the error message displayed as a flash message.
+
+## Common Academic Degrees
+
+- **Primaria** - Elementary school
+- **Secundaria** - Middle school
+- **Preparatoria/Bachillerato** - High school
+- **Técnico** - Technical degree
+- **Licenciatura** - Bachelor's degree
+- **Maestría** - Master's degree
+- **Doctorado** - Doctorate/PhD
+
+## Common Credential Types
+
+- **Certificado** - Certificate
+- **Título** - Degree title
+- **Cédula Profesional** - Professional license
+- **Diploma** - Diploma
+- **Constancia** - Proof of completion
+
+## Workflow
+
+1. Retrieve existing academic data using the GET endpoint
+2. Save the highest academic degree achieved
+3. Add all relevant training certifications using the capacitaciones endpoints
+4. Update or delete records as needed
+
+## Best Practices
+
+- Always save the highest academic degree first before adding training certifications
+- Include all relevant professional development courses and certifications
+- Ensure dates are accurate and in chronological order
+- Keep credential documents on file for verification
+- List training courses in reverse chronological order (most recent first)

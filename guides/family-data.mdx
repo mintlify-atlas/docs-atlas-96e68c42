@@ -1,0 +1,357 @@
+---
+title: Family Data
+description: Add information about your family members and dependents
+---
+
+## Overview
+
+The Family Data section captures information about your immediate and extended family members. This includes parents, siblings, spouse, children, and any dependents.
+
+<Info>
+You'll need to add each family member individually. The system allows you to add as many family members as needed.
+</Info>
+
+## Accessing Family Data Form
+
+From your evaluation dashboard, click on **Family Data** (Datos Familiares). You'll be directed to:
+
+```
+/captureData/familiaresCapture/[encrypted_evaluation_id]
+```
+
+## Before You Begin
+
+For each family member, gather:
+
+- Full name (first name and surnames)
+- Relationship to you (parentesco)
+- Occupation
+- Age
+- Whether they are still living (Vive: Sí/No)
+- Phone number
+- Whether they are your dependent (Dependiente económico: Sí/No)
+
+<Note>
+Include all immediate family members (parents, siblings, spouse, children). You may also include grandparents, in-laws, or other relatives who are significant in your life.
+</Note>
+
+## Adding Family Members
+
+<Steps>
+  <Step title="Click Add Family Member">
+    From the Family Data page, click the button to add a new family member.
+  </Step>
+
+  <Step title="Enter Names">
+    **Apellidos** (`familiarApellidos`)
+    - Enter the family member's surnames
+    - Both paternal and maternal surnames
+    - Example: "García López"
+
+    **Nombres** (`familiarNombres`)
+    - Enter the given name(s)
+    - Example: "María Elena"
+
+    <Info>
+    The system automatically combines these into a full name: `familiarNombre = apellidos + nombres`
+    </Info>
+  </Step>
+
+  <Step title="Specify Relationship">
+    **Parentesco** (`familiarParentesco`)
+    - Select or enter the relationship
+    - Common values:
+      - Padre / Madre (Father / Mother)
+      - Hermano/a (Brother / Sister)
+      - Esposo/a (Husband / Wife)
+      - Hijo/a (Son / Daughter)
+      - Abuelo/a (Grandfather / Grandmother)
+      - Suegro/a (Father-in-law / Mother-in-law)
+      - Cuñado/a (Brother-in-law / Sister-in-law)
+      - Tío/a (Uncle / Aunt)
+      - Primo/a (Cousin)
+  </Step>
+
+  <Step title="Enter Occupation and Age">
+    **Ocupación** (`familiarOcupacion`)
+    - Current occupation or job
+    - For children in school: "Estudiante"
+    - For retirees: "Jubilado/a" or "Pensionado/a"
+    - For those not working: "Hogar" or "Desempleado/a"
+    - For deceased: "Finado/a"
+
+    **Edad** (`familiarEdad`)
+    - Current age in years
+    - Whole number
+    - If deceased, age at death
+  </Step>
+
+  <Step title="Living Status">
+    **¿Vive?** (`familiarVive`)
+    - Select "Sí" if the person is alive
+    - Select "No" if the person is deceased
+
+    <Note>
+    Even deceased immediate family members should be included (parents, siblings, spouse, children).
+    </Note>
+  </Step>
+
+  <Step title="Contact Information">
+    **Teléfono** (`familiarTelefono`)
+    - Phone number where the family member can be reached
+    - Include area code
+    - Format: 618-123-4567 or 6181234567
+    - Leave empty if not applicable (deceased, no phone, etc.)
+  </Step>
+
+  <Step title="Dependent Status">
+    **¿Es dependiente económico?** (`familiarDependiente`)
+    - Select "Sí" if you provide financial support to this person
+    - Select "No" if they are financially independent
+
+    <Info>
+    Common dependents include:
+    - Children (especially minors)
+    - Stay-at-home spouse
+    - Elderly parents you support
+    - Disabled family members you care for
+    </Info>
+  </Step>
+
+  <Step title="Save Family Member">
+    Click the save button.
+
+    Success message: **"Se guardo familiar!"**
+
+    The family member will appear in your list on the same page.
+  </Step>
+
+  <Step title="Add More Family Members">
+    Repeat steps 1-7 for each family member.
+
+    <Tip>
+    Add family members in a logical order:
+    1. Parents
+    2. Spouse
+    3. Children (oldest to youngest)
+    4. Siblings
+    5. Other relatives
+    </Tip>
+  </Step>
+</Steps>
+
+## Managing Family Members
+
+### Viewing Your Family List
+
+The page displays all family members you've added in a list or table showing:
+- Full name
+- Relationship
+- Occupation
+- Age
+- Living status
+- Phone number
+- Dependent status
+
+### Editing a Family Member
+
+To update information:
+
+1. Click the edit button next to the family member
+2. Modify the fields as needed
+3. Click save
+4. Success message: **"Familiar actualizado!"**
+
+<Note>
+You can update any field except the evaluation ID. The family member's ID (`familiarID`) remains the same.
+</Note>
+
+### Deleting a Family Member
+
+To remove a family member from the list:
+
+1. Click the delete button next to the family member
+2. Confirm the deletion
+3. Success message: **"Familiar eliminado!"**
+
+<Warning>
+Deletion is permanent and cannot be undone. You'll need to re-enter the family member if deleted by mistake.
+</Warning>
+
+## Deleting All Family Data
+
+From the evaluation dashboard, you can delete your entire Family Data section:
+
+1. Find the delete option for Family Data
+2. Confirm deletion
+3. All family members will be removed
+4. Success message: **"Datos familiares eliminados"**
+
+<Warning>
+This removes ALL family members at once. Use with extreme caution.
+</Warning>
+
+## Best Practices
+
+### Who to Include
+
+<AccordionGroup>
+  <Accordion title="Always Include">
+    - Both parents (even if deceased or estranged)
+    - All siblings
+    - Current spouse or partner
+    - All children (biological, adopted, step-children)
+    - Anyone who lives with you
+    - Anyone you support financially
+  </Accordion>
+
+  <Accordion title="Consider Including">
+    - Parents-in-law
+    - Grandparents (if significant relationship)
+    - Siblings-in-law (if you interact regularly)
+    - Ex-spouse (especially if co-parenting children)
+  </Accordion>
+
+  <Accordion title="Usually Not Needed">
+    - Distant cousins
+    - Aunts/uncles you rarely see
+    - Extended family with no regular contact
+  </Accordion>
+</AccordionGroup>
+
+### Accuracy Tips
+
+1. **Use legal names**: Use full legal names, not nicknames
+2. **Be consistent**: Use the same format for all entries
+3. **Keep ages current**: Use current age, not age when you last saw them
+4. **Phone numbers**: Use the most reliable contact number
+5. **Dependent status**: Be honest about financial dependents
+
+### Common Scenarios
+
+<AccordionGroup>
+  <Accordion title="Deceased Family Member">
+    - Set "¿Vive?" to "No"
+    - Enter age at death
+    - Occupation can be their last known job or "Finado/a"
+    - Leave phone number empty
+    - Dependent status: "No"
+  </Accordion>
+
+  <Accordion title="Estranged Family Member">
+    - Still include them if immediate family (parent, sibling)
+    - Enter what information you know
+    - "No" for dependent status
+    - Can leave phone number empty if unknown
+  </Accordion>
+
+  <Accordion title="Multiple Families (Remarriage)">
+    - Include children from all relationships
+    - Include current spouse
+    - May include ex-spouse if you co-parent
+    - Include step-children if you support them
+  </Accordion>
+
+  <Accordion title="Minor Children">
+    - Always mark as "Sí" for dependent
+    - Occupation: "Estudiante" or "Menor de edad"
+    - Phone can be your own or their school
+  </Accordion>
+
+  <Accordion title="Adult Children">
+    - Mark as dependent only if you still support them financially
+    - Use their actual occupation
+    - Use their own phone number
+  </Accordion>
+</AccordionGroup>
+
+## Validation and Requirements
+
+### Required Fields
+
+For each family member, you must provide:
+- Names (both `familiarNombres` and `familiarApellidos`)
+- Relationship (`familiarParentesco`)
+- Occupation (`familiarOcupacion`)
+- Age (`familiarEdad`)
+- Living status (`familiarVive`)
+- Dependent status (`familiarDependiente`)
+
+### Optional Fields
+
+- Phone number (`familiarTelefono`)
+
+<Info>
+While phone is optional in the system, it's recommended to provide it whenever possible for living family members.
+</Info>
+
+## Section Completion
+
+The Family Data section is considered complete when:
+
+1. You have added at least one family member
+2. All added family members have complete information
+3. You have saved the section
+
+<Note>
+There is no specific minimum or maximum number of family members required. Add all relevant family members for a complete picture.
+</Note>
+
+## What Happens Next
+
+After completing the Family Data section:
+
+1. Your evaluation progress increases to approximately 33.33% (2 of 6 sections)
+2. Return to your evaluation dashboard
+3. Family Data section shows as complete ✓
+4. Proceed to the next section: Academic Data
+
+<Card title="Next: Academic Data" icon="graduation-cap" href="/guides/academic-data">
+  Continue to the Academic Data section to add your educational background
+</Card>
+
+## Field Reference
+
+Complete list of fields for each family member:
+
+| Display Name | Database Column | Type | Required | Notes |
+|--------------|-----------------|------|----------|-------|
+| Apellidos | `familiarApellidos` | text | Yes | Surnames |
+| Nombres | `familiarNombres` | text | Yes | Given names |
+| Nombre Completo | `familiarNombre` | text | Auto | Combined |
+| Parentesco | `familiarParentesco` | text | Yes | Relationship |
+| Ocupación | `familiarOcupacion` | text | Yes | Current job |
+| Edad | `familiarEdad` | number | Yes | Age in years |
+| ¿Vive? | `familiarVive` | text | Yes | Sí or No |
+| Teléfono | `familiarTelefono` | text | No | Contact number |
+| Dependiente | `familiarDependiente` | text | Yes | Sí or No |
+| Evaluation ID | `evalID` | number | Auto | Links to evaluation |
+
+## Troubleshooting
+
+### Family member not saving
+
+**Problem:** Click save but family member doesn't appear.
+
+**Solution:** 
+- Check that all required fields are filled
+- Ensure names are not empty
+- Try refreshing the page and re-entering
+
+### Can't delete family member
+
+**Problem:** Delete button not working.
+
+**Solution:**
+- Ensure you have the correct `familiarID`
+- Check that you're logged into the right evaluation
+- Try refreshing the page
+
+### Lost family data after editing
+
+**Problem:** Made changes but they disappeared.
+
+**Solution:**
+- Always click save after editing
+- Don't navigate away before saving
+- If lost, re-enter the information

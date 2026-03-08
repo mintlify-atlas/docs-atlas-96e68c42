@@ -1,0 +1,439 @@
+---
+title: Session Management
+description: Express session configuration, session store setup, and security best practices for vLife DGO
+---
+
+## Overview
+
+vLife DGO uses `express-session` middleware to manage user sessions and authentication state. The current implementation uses an in-memory session store, which is suitable for development but should be replaced with a persistent store for production deployments.
+
+## Session Configuration
+
+The session middleware is configured in `src/app.js`:
+
+```javascript
+import session from "express-session";
+import cookieParser from "cookie-parser";
+
+// Session Settings
+const sessionStore = new session.MemoryStore();
+app.use(cookieParser("secret"));
+app.use(
+  session({
+    //cookie: { maxAge: 60000 },
+    store: sessionStore,
+    saveUninitialized: true,
+    resave: true,
+    secret: "secret",
+  })
+);
+```
+
+## Configuration Options
+
+<ParamField path="store" type="MemoryStore" default="MemoryStore">
+  The session store instance. Currently uses `MemoryStore` which stores sessions in server memory.
+</ParamField>
+
+<ParamField path="secret" type="string" default="secret">
+  Secret key used to sign the session ID cookie. **Must be changed in production** to a secure, random value.
+</ParamField>
+
+<ParamField path="saveUninitialized" type="boolean" default="true">
+  Forces a session that is "uninitialized" to be saved to the store. An uninitialized session is one that is new but not modified.
+</ParamField>
+
+<ParamField path="resave" type="boolean" default="true">
+  Forces the session to be saved back to the store, even if it wasn't modified during the request.
+</ParamField>
+
+<ParamField path="cookie.maxAge" type="number" default="undefined">
+  Session cookie expiration time in milliseconds. Currently commented out, which means sessions last until the browser is closed.
+</ParamField>
+
+## Cookie Parser Configuration
+
+The application uses `cookie-parser` middleware to parse session cookies:
+
+```javascript
+app.use(cookieParser("secret"));
+```
+
+<Note>
+  The cookie parser secret should match or complement the session secret for proper cookie signing and verification.
+</Note>
+
+## Current Implementation: MemoryStore
+
+### What is MemoryStore?
+
+`MemoryStore` is the default session store that comes with `express-session`. It stores session data in server memory (RAM).
+
+### Characteristics
+
+- **Fast**: Direct memory access provides excellent performance
+- **Simple**: No additional setup or configuration required
+- **Temporary**: Sessions are lost when the server restarts
+- **Not Scalable**: Cannot be shared across multiple server instances
+- **Memory Limited**: Large numbers of sessions can consume significant RAM
+
+<Warning>
+  **MemoryStore is NOT suitable for production!**
+  
+  The express-session documentation explicitly warns against using MemoryStore in production:
+  - Sessions are lost on server restart
+  - Cannot scale horizontally (load balancing)
+  - Memory leaks can occur without proper session expiration
+  - No persistence across deployments
+</Warning>
+
+## Production Session Store Options
+
+For production deployments, replace MemoryStore with a persistent session store:
+
+### Option 1: MySQL Session Store (Recommended)
+
+Since vLife DGO already uses MySQL, storing sessions in the database is a natural fit:
+
+<Steps>
+  <Step title="Install express-mysql-session">
+    The package is already installed (see `package.json`):
+    
+    ```bash
+    npm install express-mysql-session
+    ```
+  </Step>
+  
+  <Step title="Update session configuration">
+    Modify `src/app.js` to use MySQL session store:
+    
+    ```javascript
+    import session from "express-session";
+    import MySQLStore from "express-mysql-session";
+    import { sessionDB } from "./database/Connection.js";
+    
+    const MySQLStoreSession = MySQLStore(session);
+    
+    const sessionStore = new MySQLStoreSession({
+      host: sessionDB.host,
+      user: sessionDB.user,
+      password: sessionDB.password,
+      database: sessionDB.database,
+      clearExpired: true,
+      checkExpirationInterval: 900000, // 15 minutes
+      expiration: 86400000, // 24 hours
+    });
+    
+    app.use(cookieParser(process.env.SESSION_SECRET || "change-in-production"));
+    app.use(
+      session({
+        store: sessionStore,
+        secret: process.env.SESSION_SECRET || "change-in-production",
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+          maxAge: 86400000, // 24 hours
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+          sameSite: 'lax',
+        },
+      })
+    );
+    ```
+  </Step>
+  
+  <Step title="Create sessions table">
+    The MySQL session store will automatically create the required table, or you can create it manually:
+    
+    ```sql
+    CREATE TABLE IF NOT EXISTS sessions (
+      session_id varchar(128) NOT NULL,
+      expires int(11) unsigned NOT NULL,
+      data mediumtext,
+      PRIMARY KEY (session_id)
+    );
+    ```
+  </Step>
+</Steps>
+
+### Option 2: Redis Session Store
+
+For high-performance requirements with many concurrent users:
+
+```javascript
+import Redis from "ioredis";
+import connectRedis from "connect-redis";
+
+const RedisStore = connectRedis(session);
+const redisClient = new Redis({
+  host: process.env.REDIS_HOST || 'localhost',
+  port: process.env.REDIS_PORT || 6379,
+});
+
+const sessionStore = new RedisStore({
+  client: redisClient,
+  prefix: "vlife:sess:",
+  ttl: 86400, // 24 hours
+});
+```
+
+### Option 3: MongoDB Session Store
+
+If you prefer NoSQL storage:
+
+```javascript
+import MongoStore from "connect-mongo";
+
+const sessionStore = MongoStore.create({
+  mongoUrl: process.env.MONGODB_URI,
+  collectionName: 'sessions',
+  ttl: 86400, // 24 hours
+});
+```
+
+## Session Security Best Practices
+
+### 1. Secure Session Secret
+
+<Steps>
+  <Step title="Generate a strong secret">
+    Use a cryptographically secure random string:
+    
+    ```bash
+    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+    ```
+  </Step>
+  
+  <Step title="Store in environment variable">
+    Add to `.env` file:
+    
+    ```bash
+    SESSION_SECRET=your_generated_secret_here
+    ```
+  </Step>
+  
+  <Step title="Use in configuration">
+    ```javascript
+    secret: process.env.SESSION_SECRET || "fallback-secret",
+    ```
+  </Step>
+</Steps>
+
+### 2. Cookie Security Settings
+
+For production, configure secure cookie options:
+
+```javascript
+cookie: {
+  maxAge: 86400000,           // 24 hours
+  httpOnly: true,             // Prevents client-side JavaScript access
+  secure: true,               // HTTPS only (set false for development)
+  sameSite: 'strict',         // CSRF protection
+  domain: 'yourdomain.com',   // Restrict to your domain
+}
+```
+
+<ParamField path="httpOnly" type="boolean" default="true">
+  Prevents client-side JavaScript from accessing the session cookie, mitigating XSS attacks.
+</ParamField>
+
+<ParamField path="secure" type="boolean" default="false">
+  Ensures the cookie is only sent over HTTPS. Set to `true` in production.
+</ParamField>
+
+<ParamField path="sameSite" type="string" default="lax">
+  Controls cross-site request behavior. Use `'strict'` for maximum security or `'lax'` for better usability.
+</ParamField>
+
+<ParamField path="maxAge" type="number" default="undefined">
+  Cookie expiration time in milliseconds. Recommended: 24 hours (86400000ms) for authenticated sessions.
+</ParamField>
+
+### 3. Session Configuration Best Practices
+
+```javascript
+session({
+  store: sessionStore,                    // Use persistent store
+  secret: process.env.SESSION_SECRET,     // Strong, secret key
+  resave: false,                          // Don't save unchanged sessions
+  saveUninitialized: false,               // Don't save empty sessions
+  name: 'vlife.sid',                      // Custom session cookie name
+  cookie: {
+    maxAge: 86400000,                     // 24 hour expiration
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  },
+})
+```
+
+<Warning>
+  **Current Security Issues:**
+  
+  The current implementation has several security concerns:
+  1. Hardcoded secret: `"secret"` is easily guessable
+  2. `resave: true` can cause race conditions
+  3. `saveUninitialized: true` creates unnecessary sessions
+  4. No `httpOnly` or `secure` flags on cookies
+  5. No session expiration (commented out `maxAge`)
+  
+  These should be addressed before production deployment.
+</Warning>
+
+## Session Usage in Routes
+
+### Storing Session Data
+
+```javascript
+app.post('/auth/login', async (req, res) => {
+  // Authenticate user...
+  
+  // Store user data in session
+  req.session.userId = user.id;
+  req.session.username = user.username;
+  req.session.role = user.role;
+  
+  res.redirect('/dashboard');
+});
+```
+
+### Accessing Session Data
+
+```javascript
+app.get('/dashboard', (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect('/auth/login');
+  }
+  
+  res.render('dashboard', {
+    username: req.session.username,
+    role: req.session.role,
+  });
+});
+```
+
+### Destroying Sessions (Logout)
+
+```javascript
+app.post('/auth/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Session destruction error:', err);
+    }
+    res.clearCookie('connect.sid'); // Clear the session cookie
+    res.redirect('/auth/login');
+  });
+});
+```
+
+## Flash Messages Integration
+
+vLife DGO uses `connect-flash` for temporary session-based messages:
+
+```javascript
+import flash from "connect-flash";
+
+app.use(flash());
+
+// Set flash messages
+req.flash('success', 'Operation completed successfully');
+req.flash('message', 'Please review your information');
+
+// Access flash messages in views
+app.use(function (req, res, next) {
+  app.locals.success = req.flash("success");
+  app.locals.message = req.flash("message");
+  next();
+});
+```
+
+<Note>
+  Flash messages are stored in the session and displayed once, then automatically cleared. They're ideal for showing success/error messages after form submissions or redirects.
+</Note>
+
+## Session Monitoring and Debugging
+
+### View Active Sessions
+
+```javascript
+// Development endpoint (remove in production)
+app.get('/debug/sessions', (req, res) => {
+  sessionStore.all((err, sessions) => {
+    res.json({
+      count: Object.keys(sessions || {}).length,
+      sessions: sessions,
+    });
+  });
+});
+```
+
+### Log Session Activity
+
+```javascript
+app.use((req, res, next) => {
+  console.log('Session ID:', req.sessionID);
+  console.log('Session Data:', req.session);
+  next();
+});
+```
+
+## Migration Guide: MemoryStore to MySQL Store
+
+<Steps>
+  <Step title="Backup current configuration">
+    Create a backup of `src/app.js` before making changes.
+  </Step>
+  
+  <Step title="Update dependencies">
+    Ensure `express-mysql-session` is installed (already in package.json).
+  </Step>
+  
+  <Step title="Modify session configuration">
+    Replace MemoryStore with MySQLStore as shown in the MySQL Session Store example above.
+  </Step>
+  
+  <Step title="Add SESSION_SECRET to environment">
+    Generate and add a secure session secret to your `.env` file.
+  </Step>
+  
+  <Step title="Test in development">
+    Start the application and verify sessions persist across server restarts.
+  </Step>
+  
+  <Step title="Monitor production">
+    After deployment, monitor the `sessions` table for growth and set up automated cleanup if needed.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Sessions Not Persisting
+
+**Problem**: User is logged out immediately or after page refresh.
+
+**Solutions**:
+- Check that cookies are enabled in the browser
+- Verify `saveUninitialized` and `resave` settings
+- Ensure session store is properly configured
+- Check for cookie security settings blocking the cookie
+
+### Session Memory Leak (MemoryStore)
+
+**Problem**: Server memory usage grows continuously.
+
+**Solutions**:
+- Implement session expiration with `cookie.maxAge`
+- Migrate to a persistent session store (MySQL, Redis)
+- Restart server periodically (temporary workaround)
+
+### Lost Sessions After Restart
+
+**Problem**: All users are logged out when server restarts.
+
+**Solution**: This is expected behavior with MemoryStore. Migrate to a persistent session store (MySQL, Redis, MongoDB).
+
+## Related Documentation
+
+- [Environment Variables](/configuration/environment) - Session secret configuration
+- [Database Configuration](/configuration/database) - MySQL connection for session storage
+- [Authentication Feature](/features/authentication) - Session security guidelines

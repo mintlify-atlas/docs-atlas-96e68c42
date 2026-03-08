@@ -1,0 +1,598 @@
+---
+title: 'Expediente Generation'
+description: 'Learn how vLife DGO generates comprehensive PDF expedientes using Puppeteer with distinct templates for Permanencia and Nuevo Ingreso evaluations'
+---
+
+## Overview
+
+vLife DGO uses **Puppeteer** to generate comprehensive PDF expedientes (dossiers) that compile all evaluation data into professional documents. The system provides two distinct templates based on evaluation type.
+
+## PDF Generation Architecture
+
+<Steps>
+  <Step title="Render HTML Template">
+    System renders evaluation data into Handlebars template without layout.
+  </Step>
+  <Step title="Launch Puppeteer">
+    Headless Chrome browser instance is created.
+  </Step>
+  <Step title="Navigate and Capture">
+    Puppeteer loads the HTML page and captures it as PDF.
+  </Step>
+  <Step title="Return PDF">
+    Generated PDF is sent to user's browser for download or viewing.
+  </Step>
+</Steps>
+
+## Puppeteer Configuration
+
+### PDF Generation Function
+
+```javascript
+import puppeteer from "puppeteer";
+
+async function ExpedienteSettings(url) {
+  let navegador = await puppeteer.launch({
+    ignoreHTTPSErrors: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+  
+  let pagina = await navegador.newPage();
+  await pagina.goto(url);
+  await pagina.emulateMediaType("screen");
+  
+  let pdf = await pagina.pdf({
+    format: "A4",
+    printBackground: true,
+    margin: { left: "1cm", top: "1cm", right: "1cm", bottom: "2.5cm" },
+  });
+  
+  await navegador.close();
+  return pdf;
+}
+```
+
+### PDF Settings Explained
+
+| Setting | Value | Purpose |
+|---------|-------|--------|
+| `format` | A4 | Standard international paper size |
+| `printBackground` | true | Includes CSS background colors and images |
+| `margin.left` | 1cm | Left page margin |
+| `margin.top` | 1cm | Top page margin |
+| `margin.right` | 1cm | Right page margin |
+| `margin.bottom` | 2.5cm | Bottom margin (extra space for footers) |
+
+<Info>
+  The `emulateMediaType("screen")` ensures the page is rendered with screen CSS rather than print stylesheets, giving more control over the final appearance.
+</Info>
+
+### Security Flags
+
+```javascript
+args: ["--no-sandbox", "--disable-setuid-sandbox"]
+```
+
+<Warning>
+  These flags disable Chrome's sandbox security features, which is necessary for running in containerized environments but reduces security. Only use in trusted server environments.
+</Warning>
+
+## Two Template System
+
+vLife DGO provides distinct expediente templates for each evaluation type:
+
+<CardGroup cols={2}>
+  <Card title="RenderExpedientePerma" icon="file-lines">
+    Template for Permanencia evaluations (existing employees)
+  </Card>
+  <Card title="RenderExpedienteNI" icon="file-lines">
+    Template for Nuevo Ingreso evaluations (new employees)
+  </Card>
+</CardGroup>
+
+## Expediente Data Collection
+
+### Comprehensive Data Queries
+
+The system queries all evaluation data before rendering:
+
+```javascript
+const RenderExpediente = async (req, res) => {
+  try {
+    const { evalID } = req.params;
+    
+    // Personal data
+    const [primerquery] = await PoolvLife.query(
+      ExpedienteModel.primerconsulta,
+      evalID
+    );
+    
+    // Evaluation details
+    const [datoseval] = await PoolvLife.query(
+      ExpedienteModel.datosevaluacion,
+      evalID
+    );
+    
+    // Family data
+    const [datosfam] = await PoolvLife.query(
+      ExpedienteModel.datosfamiliares,
+      evalID
+    );
+    
+    // Academic data
+    const [datosaca] = await PoolvLife.query(
+      ExpedienteModel.datosacademicos,
+      evalID
+    );
+    
+    // Social media
+    const [datosredes] = await PoolvLife.query(
+      ExpedienteModel.datosred,
+      evalID
+    );
+    
+    // Economic data
+    const [datosecon] = await PoolvLife.query(
+      ExpedienteModel.datoseco,
+      evalID
+    );
+    
+    // Bank accounts
+    const [GetCuentas] = await PoolvLife.query(
+      ExpedienteModel.getCuentas,
+      evalID
+    );
+    
+    // Credits/loans
+    const [getCredito] = await PoolvLife.query(
+      ExpedienteModel.getCredito,
+      evalID
+    );
+    
+    // Real estate
+    const [getInmuebles] = await PoolvLife.query(
+      ExpedienteModel.getInmuebles,
+      evalID
+    );
+    
+    // Personal property
+    const [getMuebles] = await PoolvLife.query(
+      ExpedienteModel.getMuebles,
+      evalID
+    );
+    
+    // References
+    const [getReferenciasNI] = await PoolvLife.query(
+      ExpedienteModel.getReferenciasNI,
+      evalID
+    );
+    
+    // Training certificates
+    const [getCapaciitaciones] = await PoolvLife.query(
+      ExpedienteModel.getCapaciitaciones,
+      evalID
+    );
+    
+    // Evaluation type
+    const [getEvaluacion] = await PoolvLife.query(
+      ExpedienteModel.getEvaluacion,
+      evalID
+    );
+    
+    // Career trajectory
+    const [datostraNI] = await PoolvLife.query(
+      ExpedienteModel.datostrayec,
+      evalID
+    );
+    
+    const [datostraPerma] = await PoolvLife.query(
+      ExpedienteModel.datostrayecPerma,
+      evalID
+    );
+    
+    // Employment history (Nuevo Ingreso)
+    const [datosUltimosEmpleosNI] = await PoolvLife.query(
+      ExpedienteModel.datosUltimosEmpleosNI,
+      evalID
+    );
+    
+    // Family in law enforcement
+    const [datosFamiliarProceso] = await PoolvLife.query(
+      ExpedienteModel.datosFamiliarProceso,
+      evalID
+    );
+    
+    // Family in corporation
+    const [datosCorpFamiliar] = await PoolvLife.query(
+      ExpedienteModel.datosCorpFamiliar,
+      evalID
+    );
+    
+    // Additional income
+    const [datosIngresoExtra] = await PoolvLife.query(
+      ExpedienteModel.datosIngresoExtra,
+      evalID
+    );
+    
+    // Assignments/adscriptions
+    const [datosAdscripciones] = await PoolvLife.query(
+      ExpedienteModel.datosAdscripciones,
+      evalID
+    );
+    
+    const tipoEval = getEvaluacion[0].tipoEvalID;
+    
+    // Render appropriate template...
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+    console.log(e);
+  }
+};
+```
+
+<Note>
+  The system queries all possible data regardless of evaluation type, then renders the appropriate template based on `tipoEvalID`.
+</Note>
+
+## Template Rendering
+
+### Permanencia Template
+
+```javascript
+if (tipoEval === 1) {
+  res.render("expedienteViews/RenderExpedientePerma", {
+    layout: false,
+    personales: primerquery[0],
+    datoseva: datoseval[0],
+    datosfami: datosfam,
+    datosacad: datosaca,
+    datosredess: datosredes,
+    datostrayecto: datostraNI[0],
+    datosTraPerma: datostraPerma[0],
+    economicos: datosecon[0],
+    GetCuentas,
+    getCredito,
+    getInmuebles,
+    getMuebles,
+    referencias: getReferenciasNI[0],
+    getCapaciitaciones,
+    datosUltimosEmpleosNI,
+    datosFamiliarProceso,
+    datosCorpFamiliar,
+    datosIngresoExtra,
+    datosAdscripciones,
+  });
+}
+```
+
+### Nuevo Ingreso Template
+
+```javascript
+else {
+  res.render("expedienteViews/RenderExpedienteNI", {
+    layout: false,
+    personales: primerquery[0],
+    datoseva: datoseval[0],
+    datosfami: datosfam,
+    datosacad: datosaca,
+    datosredess: datosredes,
+    datostrayecto: datostraNI[0],
+    datosTraPerma: datostraPerma[0],
+    economicos: datosecon[0],
+    GetCuentas,
+    getCredito,
+    getInmuebles,
+    getMuebles,
+    referencias: getReferenciasNI[0],
+    getCapaciitaciones,
+    datosUltimosEmpleosNI,
+    datosFamiliarProceso,
+    datosCorpFamiliar,
+    datosIngresoExtra,
+  });
+}
+```
+
+<Info>
+  Both templates receive similar data, but render it differently. Notice `layout: false` to prevent wrapping in the main application layout.
+</Info>
+
+## Expediente Contents
+
+### Included Data Sections
+
+Each expediente includes:
+
+<Tabs>
+  <Tab title="Personal Information">
+    - Full name and identification
+    - Date and place of birth
+    - Address and contact information
+    - RFC and CURP
+    - Social media accounts
+  </Tab>
+  <Tab title="Family Data">
+    - Family members
+    - Relationships and ages
+    - Occupations
+    - Dependent information
+  </Tab>
+  <Tab title="Academic History">
+    - Highest academic degree
+    - Educational institutions
+    - Study periods
+    - Training certificates
+    - Capacitaciones completed
+  </Tab>
+  <Tab title="Career Trajectory">
+    - Employment history
+    - Positions held
+    - Departmental assignments
+    - Family in law enforcement
+    - Corporate family connections
+  </Tab>
+  <Tab title="Economic Situation">
+    - Income and expenses breakdown
+    - Bank accounts
+    - Credits and loans
+    - Real estate holdings
+    - Vehicles and property
+    - Additional income sources
+  </Tab>
+  <Tab title="References">
+    - Three professional references
+    - Three personal references
+    - Contact information
+  </Tab>
+</Tabs>
+
+## PDF Generation Workflow
+
+### Render Endpoint
+
+The HTML template is rendered at a specific route:
+
+```javascript
+const RenderExpediente = async (req, res) => {
+  // ... data collection ...
+  
+  // Renders HTML at:
+  // http://localhost:4001/Expediente/RenderExpediente/{evalID}
+  res.render("expedienteViews/RenderExpedientePerma", {
+    layout: false,
+    // ... data ...
+  });
+};
+```
+
+### PDF Generation Endpoint
+
+A separate endpoint generates and downloads the PDF:
+
+```javascript
+const ExpedienteViewPdf = async (req, res) => {
+  try {
+    const { evalID } = req.params;
+    
+    // Generate PDF from rendered HTML
+    let pdf = await ExpedienteSettings(
+      `http://localhost:4001/Expediente/RenderExpediente/${evalID}`
+    );
+    
+    res.contentType("application/pdf");
+    res.send(pdf);
+  } catch (e) {
+    req.flash("message", "Algo salio mal !");
+    res.redirect("back");
+    console.log(e);
+  }
+};
+```
+
+<Info>
+  This two-step process allows you to preview the HTML template before PDF generation, which is useful for debugging layout issues.
+</Info>
+
+## Access URLs
+
+### Preview HTML Template
+
+```
+http://localhost:4001/Expediente/RenderExpediente/{evalID}
+```
+
+### Download PDF
+
+```
+http://localhost:4001/Expediente/ExpedienteViewPdf/{evalID}
+```
+
+<Note>
+  The `evalID` used in these URLs is the decrypted evaluation ID, not the encrypted version used in other parts of the application.
+</Note>
+
+## Expediente Template Differences
+
+### Permanencia Specifics
+
+The Permanencia template emphasizes:
+- Current position and assignments (`datosAdscripciones`)
+- Internal career trajectory
+- Departmental history
+- Long-term financial stability
+- Family members in law enforcement
+
+### Nuevo Ingreso Specifics
+
+The Nuevo Ingreso template emphasizes:
+- Previous employment outside the organization
+- Reason for joining (`motivoDescripcion`)
+- Educational background verification
+- References from previous employers
+- Entry-level financial situation
+
+## Performance Considerations
+
+### Generation Time
+
+PDF generation time depends on:
+- Amount of data in evaluation
+- Number of family members, accounts, properties, etc.
+- Server resources
+- Network latency (if assets are external)
+
+<Warning>
+  Puppeteer launches a full Chrome browser instance, which is resource-intensive. Consider:
+  - Implementing queue system for multiple simultaneous requests
+  - Setting timeout limits
+  - Caching generated PDFs
+  - Using dedicated service for PDF generation
+</Warning>
+
+### Resource Usage
+
+```javascript
+let navegador = await puppeteer.launch({
+  ignoreHTTPSErrors: true,
+  args: ["--no-sandbox", "--disable-setuid-sandbox"],
+});
+// ... use browser ...
+await navegador.close(); // Always close to free resources
+```
+
+<Info>
+  Always ensure the browser is closed after PDF generation to prevent memory leaks and resource exhaustion.
+</Info>
+
+## Error Handling
+
+### Common Issues
+
+1. **Missing Data**
+   - System queries all tables; missing data returns empty arrays
+   - Templates should handle undefined values gracefully
+
+2. **Timeout Errors**
+   - Puppeteer may timeout on slow servers
+   - Consider adding explicit timeout configuration:
+
+```javascript
+await pagina.goto(url, { timeout: 60000 }); // 60 second timeout
+```
+
+3. **Memory Issues**
+   - Multiple simultaneous PDF generations can exhaust memory
+   - Implement request queuing or rate limiting
+
+### Error Recovery
+
+```javascript
+try {
+  let pdf = await ExpedienteSettings(url);
+  res.contentType("application/pdf");
+  res.send(pdf);
+} catch (e) {
+  req.flash("message", "Algo salio mal !");
+  res.redirect("back");
+  console.log(e); // Log for debugging
+}
+```
+
+## Styling the Expediente
+
+### CSS Considerations
+
+For optimal PDF rendering:
+
+```css
+/* Ensure content fits on pages */
+body {
+  font-family: Arial, sans-serif;
+  font-size: 10pt;
+  line-height: 1.4;
+}
+
+/* Avoid page breaks inside elements */
+table, .section {
+  page-break-inside: avoid;
+}
+
+/* Control page breaks */
+.page-break {
+  page-break-after: always;
+}
+
+/* Print-friendly colors */
+@media print {
+  body {
+    color: #000;
+    background: #fff;
+  }
+}
+```
+
+<Note>
+  Even though we use `emulateMediaType("screen")`, PDF-specific CSS like `page-break` properties still work.
+</Note>
+
+## Production Considerations
+
+<Warning>
+  **For Production Deployment:**
+  
+  1. **Environment Variable for URL**: Don't hardcode `localhost:4001`
+     ```javascript
+     const baseUrl = process.env.BASE_URL || 'http://localhost:4001';
+     let pdf = await ExpedienteSettings(
+       `${baseUrl}/Expediente/RenderExpediente/${evalID}`
+     );
+     ```
+  
+  2. **Add Timeout Configuration**: Prevent hanging requests
+  3. **Implement Caching**: Cache generated PDFs for recent evaluations
+  4. **Queue System**: Handle multiple simultaneous requests
+  5. **Resource Limits**: Set memory and CPU limits for Puppeteer
+  6. **Error Monitoring**: Track PDF generation failures
+  7. **Access Control**: Verify user can access evaluation before generating PDF
+</Warning>
+
+## Integration with Evaluation Flow
+
+Expediente generation is typically the final step:
+
+<Steps>
+  <Step title="Complete All Sections">
+    Employee completes all six data capture sections.
+  </Step>
+  <Step title="Upload Required Documents">
+    All mandatory documents are uploaded.
+  </Step>
+  <Step title="Finalize Evaluation">
+    Employee marks evaluation as complete.
+  </Step>
+  <Step title="Generate Expediente">
+    System generates comprehensive PDF for review.
+  </Step>
+  <Step title="Review and Approve">
+    Administrators review the expediente and approve/reject.
+  </Step>
+</Steps>
+
+## Related Files
+
+- **ExpedienteController.js** (`src/controllers/ExpedienteController.js:1`) - PDF generation logic
+- **ExpedienteModel.js** - Database queries for expediente data
+- **RenderExpedientePerma.hbs** - Permanencia template
+- **RenderExpedienteNI.hbs** - Nuevo Ingreso template
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Certificate Validation" icon="certificate" href="/features/certificate-validation">
+    Generate and validate completion certificates
+  </Card>
+  <Card title="Data Capture" icon="keyboard" href="/features/data-capture">
+    Review the six data capture sections
+  </Card>
+</CardGroup>

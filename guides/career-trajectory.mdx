@@ -1,0 +1,535 @@
+---
+title: Career Trajectory
+description: Document your employment history and work experience
+---
+
+## Overview
+
+The Career Trajectory section captures your complete work history. The specific information required differs significantly between **Permanencia** (existing employees) and **Nuevo Ingreso** (new hires).
+
+<Warning>
+This section has DIFFERENT forms based on your evaluation type. Make sure you understand which version applies to you.
+</Warning>
+
+## Evaluation Type Differences
+
+<CardGroup cols={2}>
+  <Card title="Permanencia" icon="user-check">
+    **For existing employees:**
+    - Current position details
+    - Work history within CEACC/government
+    - Multiple assignments/adscripciones
+    - Legal and disciplinary history
+    - Family in law enforcement
+  </Card>
+  
+  <Card title="Nuevo Ingreso" icon="user-plus">
+    **For new hires:**
+    - Desired position details
+    - Previous private employment history
+    - Multiple past jobs
+    - How you learned about the position
+    - Legal and disciplinary history
+  </Card>
+</CardGroup>
+
+## Accessing Career Trajectory Form
+
+From your evaluation dashboard, click on **Career Trajectory** (Trayectoria Laboral). You'll be directed to:
+
+```
+/captureData/trayectoriaCapture/[encrypted_evaluation_id]
+```
+
+The system automatically detects your evaluation type and shows the appropriate form.
+
+---
+
+## Part A: Permanencia (Existing Employees)
+
+<Info>
+This section applies if your evaluation type is Permanencia (tipoEvalID = 1).
+</Info>
+
+### Before You Begin
+
+Gather information about:
+- Your current position and department
+- Employment start date
+- Supervisor information
+- Previous assignments within the organization
+- Any legal proceedings or disciplinary actions
+- Family members in law enforcement
+
+### Step-by-Step: Permanencia
+
+<Steps>
+  <Step title="Current Position Information">
+    **Dependencia** (`trayectoriaDependencia`)
+    - Your current government agency or department
+    - Example: "Secretaría de Seguridad Pública"
+
+    **Adscripción** (`trayectoriaAdscripcion`)
+    - Your specific unit or division
+    - Example: "Dirección de Policía Estatal"
+
+    **Cargo** (`trayectoriaCargo`)
+    - Your job title/position
+    - Example: "Oficial de Policía", "Inspector", "Comandante"
+
+    **Grado** (`trayectoriaGrado`)
+    - Your rank or grade level (if applicable)
+    - Example: "Oficial 1", "Suboficial", "Comisario"
+  </Step>
+
+  <Step title="Employment Timeline">
+    **Fecha de Ingreso** (`trayectoriaFechaIngreso`)
+    - When you started working for the organization
+    - Format: DD/MM/YYYY or as shown in form
+
+    **Última Promoción** (`trayectoriaPromocion`)
+    - Date of your most recent promotion
+    - If never promoted, enter "N/A" or leave blank
+  </Step>
+
+  <Step title="Work Details">
+    **Zona de Trabajo** (`trayectoriaZonaTrabajo`)
+    - Geographic area where you work
+    - Example: "Durango Capital", "Zona Norte", "Región Lagunar"
+
+    **¿Porta Arma?** (`trayectoriaPortaArma`)
+    - Do you carry a weapon?
+    - Options: "Sí" or "No"
+
+    **¿Tiene Personal a su Cargo?** (`trayectoriaPersonal`)
+    - Do you supervise anyone?
+    - Options: "Sí" or "No"
+
+    **¿Cuántos?** (`trayectoriaCuantos`)
+    - If yes, how many people do you supervise?
+    - Enter a number
+    - If no, enter "0" or "N/A"
+
+    **Funciones Principales** (`trayectoriaFunciones`)
+    - Describe your main job duties
+    - Be specific and comprehensive
+    - Example: "Patrullaje preventivo, atención a reportes ciudadanos, elaboración de informes"
+  </Step>
+
+  <Step title="Supervisor Information">
+    **Nombre del Jefe Inmediato** (`trayectoriaNombreJefe`)
+    - Full name of your direct supervisor
+
+    **Puesto del Jefe** (`trayectoriaPuestoJefe`)
+    - Your supervisor's job title
+    - Example: "Comandante de Sector"
+
+    **Teléfono del Jefe** (`trayectoriaNumJefe`)
+    - Contact phone for your supervisor
+    - Include extension if applicable
+  </Step>
+
+  <Step title="Legal and Disciplinary History">
+    **¿Ha sido acusado, procesado, o sentenciado?** (`trayectoriaAcusaciones`)
+    - Any criminal accusations or charges?
+    - Options: "Sí" or "No"
+
+    **¿Ha tenido procesos legales?** (`trayectoriaProcesos`)
+    - Any legal proceedings?
+    - Options: "Sí" or "No"
+
+    **¿Ha recibido sanciones?** (`trayectoriaSanciones`)
+    - Any disciplinary sanctions at work?
+    - Options: "Sí" or "No"
+
+    **¿Procedimientos administrativos?** (`trayectoriaProcedimientos`)
+    - Any administrative proceedings?
+    - Options: "Sí" or "No"
+
+    **¿Quejas ciudadanas?** (`trayectoriaQuejas`)
+    - Any citizen complaints filed against you?
+    - Options: "Sí" or "No"
+
+    <Info>
+    If you answer "Sí" to any of these, you'll need to provide details.
+    </Info>
+
+    **Si respondió Sí, ¿Qué ocurrió?** (`trayectoriaOcurrioProcesos`)
+    - Explain what happened
+    - Be honest and complete
+
+    **Motivo** (`trayectoriaMotivoProcesos`)
+    - The reason or cause of the issue
+
+    **Documentos** (`trayectoriaDocumentosProcesos`)
+    - What documentation exists?
+    - Examples: "Resolución absolutoria", "Carta de amonestación", "Acta administrativa"
+  </Step>
+
+  <Step title="C3 Evaluation History">
+    **¿Cuándo fue su último C3?** (`trayectoriaUltimoCcc`)
+    - Date of your most recent C3 evaluation
+    - Format: Month and Year (e.g., "Enero 2024")
+
+    **¿Dónde?** (`trayectoriaDondeCcc`)
+    - Location where the evaluation was conducted
+    - Example: "Centro de Control de Confianza Durango"
+
+    **Dependencia** (`trayectoriaDependenciaCcc`)
+    - Which agency requested the C3
+
+    **Motivo** (`trayectoriaMotivoCcc`)
+    - Reason for the evaluation
+    - Examples: "Ingreso", "Permanencia", "Promoción"
+  </Step>
+
+  <Step title="Save Main Information">
+    Click save to store your career trajectory data.
+
+    Success message: **"Se guardaron datos laborales. Continua con Adscripciones"**
+  </Step>
+
+  <Step title="Add Previous Assignments (Adscripciones)">
+    After saving, add your work history within the organization.
+
+    For each previous assignment:
+
+    **Nombre** (`adscripcionNombre`)
+    - Name of the unit or department
+
+    **Puesto** (`adscripcionPuesto`)
+    - Your position title
+
+    **Período** (`adscripcionPeriodo`)
+    - Time period (e.g., "2018-2020")
+
+    **Ingreso Mensual** (`adscripcionIngreso`)
+    - Your monthly salary at that time
+
+    **Motivo de Cambio** (`adscripcionMotivo`)
+    - Why you left that position
+    - Examples: "Promoción", "Reasignación", "Cambio de adscripción"
+
+    **Nombre del Jefe** (`adscripcionJefe`)
+    - Who was your supervisor
+
+    <Info>
+    You can add multiple assignments. Click save after each one.
+    </Info>
+
+    Success message per assignment: **"Se guardaron adscripciones"**
+  </Step>
+
+  <Step title="Family in Legal Proceedings (If Applicable)">
+    If any family member has been involved in legal proceedings:
+
+    **Nombre** (`famProcesoNombre`)
+    - Family member's full name
+
+    **Parentesco** (`famProcesoParentesco`)
+    - Relationship to you
+
+    **¿Cuándo ocurrió?** (`famProcesoCuando`)
+    - When did it happen?
+
+    **¿Qué ocurrió?** (`famProcesoQue`)
+    - Description of what happened
+
+    Click save for each family member.
+
+    Success message: **"Se guardaro familiar con proceso"**
+  </Step>
+
+  <Step title="Family in Law Enforcement (If Applicable)">
+    If you have family members working in law enforcement or government security:
+
+    **Nombre** (`corpFamiliarNombre`)
+    - Family member's name
+
+    **Parentesco** (`corpFamiliarParentesco`)
+    - Relationship to you
+
+    <Note>
+    This helps identify potential conflicts of interest or nepotism.
+    </Note>
+
+    Click save for each family member.
+
+    Success message: **"Se guardaro familiar en coorporacion"**
+  </Step>
+</Steps>
+
+---
+
+## Part B: Nuevo Ingreso (New Hires)
+
+<Info>
+This section applies if your evaluation type is Nuevo Ingreso (tipoEvalID = 2).
+</Info>
+
+### Before You Begin
+
+Gather information about:
+- The position you're applying for
+- How you learned about the vacancy
+- Your previous employment history
+- Any legal issues or proceedings
+- Family in law enforcement
+
+### Step-by-Step: Nuevo Ingreso
+
+<Steps>
+  <Step title="Position Information">
+    **Puesto al que Evalúa** (`trayectoriaPuestoEval`)
+    - The position you're applying for
+    - Example: "Oficial de Policía", "Técnico en Criminología"
+
+    **¿Cómo se enteró de la vacante?** (`trayectoriaEnteroVacante`)
+    - How did you learn about this job opening?
+    - Examples:
+      - "Convocatoria pública"
+      - "Recomendación de familiar"
+      - "Sitio web de la dependencia"
+      - "Redes sociales"
+      - "Oficina de reclutamiento"
+  </Step>
+
+  <Step title="Understanding of Position">
+    **Función 1** (`trayectoriaFuncion1`)
+    - Describe one main function of the position
+
+    **Función 2** (`trayectoriaFuncion2`)
+    - Describe a second main function
+
+    **Función 3** (`trayectoriaFuncion3`)
+    - Describe a third main function
+
+    <Tip>
+    This shows you understand what the job entails. Be specific and realistic about the duties.
+    </Tip>
+  </Step>
+
+  <Step title="Legal and Disciplinary History">
+    Same questions as Permanencia:
+
+    - ¿Ha sido acusado, procesado, o sentenciado? (`trayectoriaAcusaciones`)
+    - ¿Ha tenido procesos legales? (`trayectoriaProcesos`)
+    - ¿Ha recibido sanciones? (`trayectoriaSanciones`)
+    - ¿Procedimientos administrativos? (`trayectoriaProcedimientos`)
+    - ¿Quejas ciudadanas? (`trayectoriaQuejas`)
+
+    If yes to any:
+    - ¿Qué ocurrió? (`trayectoriaOcurrio`)
+    - Motivo (`trayectoriaMotivo`)
+    - Documento de Resolución (`trayectoriaDocResolucion`)
+  </Step>
+
+  <Step title="C3 Evaluation History">
+    Same as Permanencia:
+
+    - ¿Cuándo fue su último C3? (`trayectoriaCcc`)
+    - ¿Cuándo? (`trayectoriaCccCuando`)
+    - Dependencia (`trayectoriaCccDependencia`)
+    - Motivo (`trayectoriaCccMotivo`)
+  </Step>
+
+  <Step title="Save Main Information">
+    Click save to store your data.
+
+    Success message: **"Se guardó trayectoria laboral NI!"**
+  </Step>
+
+  <Step title="Add Previous Employment History">
+    Unlike Permanencia, Nuevo Ingreso requires listing previous private sector or other employment.
+
+    For each previous job:
+
+    **Empresa** (`empleoEmpresa`)
+    - Name of the company or employer
+
+    **Puesto** (`empleoPuesto`)
+    - Your job title
+
+    **Dirección** (`empleoDireccion`)
+    - Address of the workplace
+
+    **Período** (`empleoPeriodo`)
+    - Time period worked (e.g., "2019-2021")
+
+    **Ingreso Mensual** (`empleoIngreso`)
+    - Your monthly salary
+
+    **Motivo de Baja** (`empleoMotivo`)
+    - Why you left the job
+    - Examples: "Mejor oportunidad", "Fin de contrato", "Renuncia voluntaria"
+
+    <Info>
+    You can add multiple previous jobs. The system handles both single and multiple entries.
+    </Info>
+
+    Click save after entering all jobs.
+
+    Success message: **"Se guardaron empleos"**
+  </Step>
+
+  <Step title="Family in Legal Proceedings (If Applicable)">
+    Same as Permanencia - add family members involved in legal issues.
+  </Step>
+
+  <Step title="Family in Law Enforcement (If Applicable)">
+    Same as Permanencia - add family members working in law enforcement.
+  </Step>
+</Steps>
+
+---
+
+## Managing Career Trajectory Data
+
+### Updating Your Information
+
+**Permanencia:**
+- Click update on the main form
+- Make changes
+- Save
+- Success message: **"Se actualizaron datos laborales"**
+
+**Nuevo Ingreso:**
+- Click update on the main form
+- Make changes
+- Save
+- Success message: **"Se actualizó trayectoria laboral NI!"**
+
+### Deleting Entries
+
+**Delete a Previous Job (Nuevo Ingreso):**
+- Click delete next to the employment entry
+- Confirm
+- Success message: **"Se elimino empleo"**
+
+**Delete All Career Trajectory Data:**
+- From evaluation dashboard, delete the entire section
+- Success message: **"Datos trayectoria eliminados"**
+- This removes: main data, all assignments/jobs, family in legal proceedings, family in law enforcement
+
+<Warning>
+Deleting the entire section removes ALL career information including sub-sections. This cannot be undone.
+</Warning>
+
+## Best Practices
+
+### For Permanencia Employees
+
+<AccordionGroup>
+  <Accordion title="Listing Assignments">
+    - Include all positions since you started
+    - List in chronological order (oldest first or newest first - be consistent)
+    - Include temporary assignments if they lasted more than a few months
+    - Explain gaps in employment
+  </Accordion>
+
+  <Accordion title="Supervisor Information">
+    - Use your immediate supervisor (not skip-level)
+    - Verify phone numbers are current
+    - If supervisor has changed recently, use current supervisor
+  </Accordion>
+
+  <Accordion title="Disciplinary History">
+    - Be completely honest
+    - If you were cleared, emphasize that
+    - Provide context but don't make excuses
+    - Have documentation ready
+  </Accordion>
+</AccordionGroup>
+
+### For Nuevo Ingreso Candidates
+
+<AccordionGroup>
+  <Accordion title="Previous Employment">
+    - List jobs in reverse chronological order (most recent first)
+    - Include at least the last 5 years of employment
+    - If you've never worked, explain (student, recent graduate, etc.)
+    - Include part-time or informal work if significant
+  </Accordion>
+
+  <Accordion title="Understanding the Position">
+    - Research the position thoroughly before answering
+    - Be realistic about duties (include difficult aspects)
+    - Show you understand the responsibilities
+    - Mention serving the community
+  </Accordion>
+
+  <Accordion title="How You Learned About Job">
+    - Be truthful about how you found out
+    - If recommended by someone, mention who
+    - Internal recommendations can be positive if disclosed
+  </Accordion>
+</AccordionGroup>
+
+### Universal Tips
+
+1. **Legal Issues**: Always disclose. Background checks will find them anyway.
+2. **C3 History**: If you've never had a C3, enter "Ninguno" or "N/A"
+3. **Family in Law Enforcement**: This is for disclosure, not a negative factor
+4. **Be Thorough**: This section is critical for background investigation
+
+## Section Completion
+
+The Career Trajectory section is complete when:
+
+**Permanencia:**
+- Main career information saved
+- At least one previous assignment added (if you've had any)
+- Legal/disciplinary questions answered
+- C3 history provided
+
+**Nuevo Ingreso:**
+- Main information saved (position, how you learned about it, functions)
+- Previous employment history added (at least 1-2 jobs if you have work experience)
+- Legal/disciplinary questions answered
+- C3 history provided
+
+## What Happens Next
+
+After completing Career Trajectory:
+
+1. Your evaluation progress increases to approximately 66.67% (4 of 6 sections)
+2. Return to your evaluation dashboard
+3. Career Trajectory shows as complete ✓
+4. Proceed to: Economic Data
+
+<Card title="Next: Economic Data" icon="dollar-sign" href="/guides/economic-data">
+  Continue to the Economic Data section to enter your financial information
+</Card>
+
+## Field Reference
+
+Due to the complexity and number of fields in this section, refer to the source code files:
+- **Permanencia**: `CaptureTrayectoriaController.js` - SaveTrayectoria function
+- **Nuevo Ingreso**: `CaptureTrayectoriaController.js` - SaveTrayectoriaNI function
+
+## Troubleshooting
+
+### Which form should I see?
+
+**Problem:** Not sure if I'm seeing the right form.
+
+**Solution:** Check your evaluation type from your profile or dashboard. The system should automatically load the correct form.
+
+### Can't add multiple jobs/assignments
+
+**Problem:** Only one job saved, others disappear.
+
+**Solution:** Click save after EACH entry. Don't try to enter multiple at once without saving.
+
+### Legal history questions confusing
+
+**Problem:** Don't understand the difference between the questions.
+
+**Solution:**
+- **Acusaciones**: Were you accused of a crime?
+- **Procesos**: Were you in a legal proceeding (civil or criminal)?
+- **Sanciones**: Were you formally sanctioned at work?
+- **Procedimientos**: Were administrative proceedings opened against you?
+- **Quejas**: Did citizens file complaints about you?
+
+When in doubt, answer "Yes" and explain in the details.

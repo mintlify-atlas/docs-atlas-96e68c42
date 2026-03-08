@@ -1,0 +1,600 @@
+---
+title: Economic Data
+description: Document your financial situation including income, expenses, assets, and liabilities
+---
+
+## Overview
+
+The Economic Data section captures your complete financial picture. This includes monthly income and expenses, bank accounts, credit accounts, real estate and personal property, and any additional sources of income.
+
+<Warning>
+This section requires detailed financial information. Have your bank statements, pay stubs, loan documents, and property titles available.
+</Warning>
+
+## Accessing Economic Data Form
+
+From your evaluation dashboard, click on **Economic Data** (Datos Económicos). You'll be directed to:
+
+```
+/captureData/economicosCapture/[encrypted_evaluation_id]
+```
+
+## Section Structure
+
+The Economic Data section has multiple parts:
+
+1. **Main Financial Summary** - Income and expenses overview
+2. **Bank Accounts** - Savings and checking accounts
+3. **Credit/Loans** - Debts and liabilities
+4. **Real Estate** - Properties you own
+5. **Personal Property** - Vehicles and other valuable assets
+6. **Additional Income** - Extra income sources
+
+<Info>
+You must complete the Main Financial Summary first before adding bank accounts, credits, or properties.
+</Info>
+
+## Before You Begin
+
+Gather the following documents:
+
+<AccordionGroup>
+  <Accordion title="Income Information">
+    - Most recent pay stub
+    - Annual income statements
+    - Documentation of additional income (rental, business, etc.)
+    - Spouse's income information if applicable
+  </Accordion>
+
+  <Accordion title="Expense Records">
+    - Monthly budget or expense tracking
+    - Major recurring bills (rent/mortgage, utilities, etc.)
+    - Loan payment amounts
+    - Childcare or education expenses
+  </Accordion>
+
+  <Accordion title="Bank Accounts">
+    - Recent bank statements (all accounts)
+    - Account numbers
+    - Opening balances and current balances
+  </Accordion>
+
+  <Accordion title="Debts and Loans">
+    - Credit card statements
+    - Mortgage documents
+    - Auto loan information
+    - Personal loans
+    - Current balance owed on each
+  </Accordion>
+
+  <Accordion title="Assets">
+    - Property deeds or titles
+    - Vehicle registration and title
+    - Purchase prices and current values
+    - Any other significant assets
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Part 1: Main Financial Summary
+
+<Steps>
+  <Step title="Monthly Income">
+    **Ingreso Mensual** (`economicosMensual`)
+    - Your base monthly salary/income
+    - Enter the net amount (after taxes)
+    - Example: "15000" for $15,000 pesos
+
+    **Ingreso Adicional** (`economicosAdicional`)
+    - Any other regular monthly income
+    - Examples: rental income, second job, benefits
+    - Enter "0" if none
+
+    **¿En qué consiste?** (`economicosConsiste`)
+    - Explain what the additional income is from
+    - Example: "Renta de propiedad", "Trabajo de fin de semana"
+    - Enter "N/A" if no additional income
+
+    **Total de Ingresos** (`economicosTotalIngreso`)
+    - Sum of monthly + additional income
+    - The system may auto-calculate this
+  </Step>
+
+  <Step title="Monthly Expenses">
+    Enter your average monthly spending for each category:
+
+    **Alimentos** (`economicosAlimentos`)
+    - Food and groceries
+
+    **Transporte** (`economicosTransporte`)
+    - Gas, public transportation, vehicle maintenance
+
+    **Servicios** (`economicosServicios`)
+    - Utilities (water, electricity, gas)
+
+    **Comunicaciones** (`economicosComunicaciones`)
+    - Phone, internet, cable TV
+
+    **Tarjetas de Crédito** (`economicosTarjetas`)
+    - Monthly credit card payments
+
+    **Créditos** (`economicosCreditos`)
+    - Loan payments (auto, personal, etc.)
+
+    **Vestido** (`economicosVestido`)
+    - Clothing and footwear
+
+    **Médico** (`economicosMedico`)
+    - Healthcare, medicines, insurance
+
+    **Tandas** (`economicosTandas`)
+    - Savings clubs or rotating credit
+
+    **Ahorros** (`economicosAhorros`)
+    - Regular savings contributions
+
+    **Gastos Escolares** (`economicosEscolares`)
+    - Education costs for children
+
+    **Renta** (`economicosRenta`)
+    - Monthly rent or mortgage payment
+
+    **Pensión Alimenticia** (`economicosPension`)
+    - Child support or alimony payments
+
+    **Otros / Faltante** (`economicosFaltante`)
+    - Any other expenses not covered above
+
+    <Tip>
+    Review your bank statements from the last 3 months to get accurate average amounts.
+    </Tip>
+  </Step>
+
+  <Step title="Total Expenses and Housing">
+    **Total de Egresos** (`economicosTotalEgresos`)
+    - Sum of all expense categories
+    - May auto-calculate
+
+    **Tipo de Vivienda** (`economicosTipo`)
+    - Type of housing:
+      - Propia (Owned)
+      - Rentada (Rented)
+      - Familiar (Family-owned, living with family)
+      - Prestada (Borrowed/Loaned)
+
+    **Régimen** (`economicosRegimen`)
+    - If married, the marital property regime:
+      - Bienes Mancomunados (Community property)
+      - Separación de Bienes (Separate property)
+      - N/A if single
+  </Step>
+
+  <Step title="Financial Issues">
+    **Problemática Económica** (`economicosProblematica`)
+    - Do you have any financial difficulties?
+    - Explain any:
+      - Outstanding debts you can't pay
+      - Bankruptcy or foreclosure
+      - Legal judgments against you
+      - Significant financial stress
+    - Enter "Ninguna" if you have no financial problems
+
+    <Note>
+    Being honest about financial problems is better than hiding them. They may be discovered during background checks.
+    </Note>
+  </Step>
+
+  <Step title="Save Financial Summary">
+    Click save to store your financial overview.
+
+    Success message: **"Se guardaron economicos correctamente!"**
+
+    Now you can add bank accounts, credits, properties, and assets.
+  </Step>
+</Steps>
+
+---
+
+## Part 2: Bank Accounts
+
+Add all bank accounts (checking, savings, investment accounts).
+
+<Steps>
+  <Step title="Click Add Bank Account">
+    Look for the option to add a new account (Agregar Cuenta Bancaria).
+  </Step>
+
+  <Step title="Enter Account Details">
+    **Tipo de Cuenta** (`bancosTipo`)
+    - Type of account:
+      - Ahorro (Savings)
+      - Cheques (Checking)
+      - Inversión (Investment)
+      - Nómina (Payroll)
+
+    **Institución** (`bancosInstitucion`)
+    - Name of the bank
+    - Examples: "Banorte", "BBVA", "Santander", "Banamex"
+
+    **Fecha de Apertura** (`bancosApertura`)
+    - When you opened the account
+    - Month and year is sufficient
+
+    **Monto de Apertura** (`bancosMontoApertura`)
+    - Initial deposit amount when opening
+    - In pesos
+
+    **Monto Actual** (`bancosMontoActual`)
+    - Current balance in the account
+    - Use the most recent statement
+  </Step>
+
+  <Step title="Save Bank Account">
+    Click save.
+
+    Success message: **"Se guardaron los bancos correctamente!"**
+
+    Repeat for each bank account you have.
+  </Step>
+</Steps>
+
+<Info>
+Include all accounts, even if the balance is very low or negative. Full disclosure is required.
+</Info>
+
+---
+
+## Part 3: Credits and Loans
+
+Add all debts, loans, and credit accounts.
+
+<Steps>
+  <Step title="Click Add Credit/Loan">
+    Look for the option to add a credit account (Agregar Crédito).
+  </Step>
+
+  <Step title="Enter Loan Details">
+    **Tipo de Crédito** (`creditosTipo`)
+    - Type of debt:
+      - Tarjeta de Crédito (Credit Card)
+      - Hipotecario (Mortgage)
+      - Automotriz (Auto Loan)
+      - Personal (Personal Loan)
+      - Nómina (Payroll Advance)
+      - INFONAVIT
+      - Otro (Other)
+
+    **Institución** (`creditosInstitucion`)
+    - Name of the lender
+    - Bank, finance company, or creditor name
+
+    **Fecha de Apertura** (`creditosApertura`)
+    - When you took out the loan
+
+    **Deuda Actual** (`creditosDeuda`)
+    - Current amount you still owe
+    - Total remaining balance
+
+    **Mensualidad** (`creditosMensualidad`)
+    - Your monthly payment amount
+
+    **Préstamo Original** (`creditosPrestamo`)
+    - Original loan amount
+    - How much you borrowed initially
+  </Step>
+
+  <Step title="Save Credit">
+    Click save.
+
+    Success message: **"Se guardaron creditos correctamente!"**
+
+    Repeat for each debt or loan you have.
+  </Step>
+</Steps>
+
+<Warning>
+Do not hide debts. Financial background checks will discover them. Undisclosed debts are a bigger red flag than having legitimate debts.
+</Warning>
+
+---
+
+## Part 4: Real Estate (Inmuebles)
+
+Add properties you own (houses, land, commercial properties).
+
+<Steps>
+  <Step title="Click Add Property">
+    Look for the option to add real estate (Agregar Inmueble).
+  </Step>
+
+  <Step title="Enter Property Details">
+    **Tipo de Inmueble** (`inmueblesTipo`)
+    - Type of property:
+      - Casa (House)
+      - Departamento (Apartment)
+      - Terreno (Land)
+      - Local Comercial (Commercial Space)
+      - Otro (Other)
+
+    **Fecha de Adquisición** (`inmueblesFecha`)
+    - When you acquired the property
+
+    **Forma de Adquisición** (`inmueblesForma`)
+    - How you acquired it:
+      - Compra (Purchase)
+      - Herencia (Inheritance)
+      - Donación (Gift)
+      - Crédito (Financed)
+
+    **Ubicación** (`inmueblesUbicacion`)
+    - Full address of the property
+
+    **Valor de Compra** (`inmueblesValorCompra`)
+    - Purchase price (or value when acquired)
+
+    **Valor Actual** (`inmueblesValorActual`)
+    - Current estimated market value
+
+    **Documento** (`inmueblesDocumento`)
+    - What proof of ownership you have:
+      - Escritura (Deed)
+      - Contrato de Compra-Venta (Purchase Contract)
+      - En Trámite (In Process)
+  </Step>
+
+  <Step title="Save Property">
+    Click save.
+
+    Success message: **"Inmueble guardado!"**
+
+    Add each property you own.
+  </Step>
+</Steps>
+
+---
+
+## Part 5: Personal Property (Muebles)
+
+Add vehicles and other valuable personal property.
+
+<Steps>
+  <Step title="Click Add Vehicle/Asset">
+    Look for the option to add personal property (Agregar Bien Mueble).
+  </Step>
+
+  <Step title="Enter Asset Details">
+    The form fields will vary based on asset type, but typically include:
+
+    **Tipo** - Type (Vehicle, Motorcycle, Boat, etc.)
+    **Marca** - Brand/Make
+    **Modelo** - Model
+    **Año** - Year
+    **Valor** - Value
+    **Forma de Adquisición** - How acquired
+    **Documento** - Title or proof of ownership
+
+    <Info>
+    Most commonly, this section is for vehicles. Include all cars, trucks, motorcycles, etc. that you own.
+    </Info>
+  </Step>
+
+  <Step title="Save Asset">
+    Click save.
+
+    Success message: **"Bien mueble guardado!"**
+
+    Add each vehicle or major asset.
+  </Step>
+</Steps>
+
+---
+
+## Part 6: Additional Income Sources
+
+If you have extra sources of income beyond your salary.
+
+<Steps>
+  <Step title="Click Add Income Source">
+    Look for the option to add additional income (Agregar Ingreso Extra).
+  </Step>
+
+  <Step title="Enter Income Details">
+    **Nombre** (`ingresoextraNombre`)
+    - Description of the income source
+    - Examples:
+      - "Renta de casa en [location]"
+      - "Negocio de [type]"
+      - "Trabajo independiente como [profession]"
+
+    **Cantidad Mensual** (`ingresoextraCantidad`)
+    - Average monthly income from this source
+    - In pesos
+  </Step>
+
+  <Step title="Save Income Source">
+    Click save.
+
+    Success message: **"Ingreso extra guardado!"**
+
+    Add each additional income source.
+  </Step>
+</Steps>
+
+---
+
+## Managing Economic Data
+
+### Updating Financial Summary
+
+1. Return to the Economic Data page
+2. The main form will be pre-populated
+3. Make your changes
+4. Click update
+5. Success message: **"Se actualizaron economicos correctamente!"**
+
+### Deleting Individual Items
+
+Each section (banks, credits, properties, etc.) has delete buttons:
+
+- **Delete Bank Account**: "Cuenta borrada"
+- **Delete Credit**: "Credito borrado"
+- **Delete Property**: "Inmueble borrado"
+- **Delete Asset**: "Mueble borrado"
+- **Delete Income Source**: "Ingreso extra borrado"
+
+<Warning>
+Deletion is immediate and permanent. Make sure before clicking delete.
+</Warning>
+
+### Deleting All Economic Data
+
+From the evaluation dashboard:
+
+1. Delete the entire Economic Data section
+2. Confirm
+3. Success message: **"Datos economicos eliminados"**
+4. This removes: financial summary, all bank accounts, all credits, all properties, all assets, all income sources
+
+<Warning>
+This is a complete wipe of all financial information. Only use if you need to start completely over.
+</Warning>
+
+---
+
+## Best Practices
+
+### Income and Expenses
+
+<AccordionGroup>
+  <Accordion title="Calculating Totals">
+    - Add up all income sources
+    - Be realistic about expenses (don't underestimate)
+    - If expenses exceed income, explain in "Problemática Económica"
+    - Spouse's income should be included if you're married
+  </Accordion>
+
+  <Accordion title="Expense Categories">
+    - Use 3-month averages for variable expenses
+    - Include annual expenses divided by 12
+    - Don't forget irregular expenses (car repairs, medical, etc.)
+    - Be consistent with how you categorize
+  </Accordion>
+
+  <Accordion title="Financial Problems">
+    - Be honest about debt issues
+    - Explain if you're working on solutions
+    - Context matters (medical emergency vs. gambling)
+    - Show you're responsible even if struggling
+  </Accordion>
+</AccordionGroup>
+
+### Assets and Liabilities
+
+<AccordionGroup>
+  <Accordion title="Bank Accounts">
+    - Include all accounts, even small ones
+    - Include joint accounts
+    - Include accounts you rarely use
+    - Closed accounts in past 12 months should be mentioned
+  </Accordion>
+
+  <Accordion title="Debts and Loans">
+    - List every credit card, even if paid off
+    - Include informal loans if significant
+    - If behind on payments, disclose it
+    - Explain any defaulted loans
+  </Accordion>
+
+  <Accordion title="Property Values">
+    - Use recent appraisals if available
+    - Online estimates (like Zillow equivalent) are acceptable
+    - Be conservative (don't overestimate)
+    - Update values if you know they've changed significantly
+  </Accordion>
+
+  <Accordion title="Additional Income">
+    - Report all income, even if small
+    - Include cash businesses honestly
+    - Rental income must be reported
+    - Side gigs and freelance work count
+  </Accordion>
+</AccordionGroup>
+
+### Common Mistakes to Avoid
+
+1. **Underreporting expenses** - This makes your finances look unrealistic
+2. **Forgetting accounts** - List all bank accounts, even empty ones
+3. **Hiding debts** - They will be found in credit checks
+4. **Overvaluing assets** - Be realistic about what things are worth
+5. **Not explaining deficits** - If expenses > income, explain how you're managing
+
+---
+
+## Connection to Documents
+
+You'll need to upload financial documents in the [Document Requirements](/guides/document-requirements) section:
+
+- **Permanencia**: Comprobante de Ingresos (required)
+- **Nuevo Ingreso**: Comprobante de Ingresos (sometimes required)
+- Optional: Bank statements, proof of property ownership, etc.
+
+---
+
+## Section Completion
+
+The Economic Data section is complete when:
+
+1. Main financial summary is saved (income and expenses)
+2. All bank accounts are listed
+3. All debts/loans are listed
+4. Properties are listed (if you own any)
+5. Vehicles are listed (if you own any)
+6. Additional income sources are listed (if applicable)
+
+<Note>
+You must have at least the main financial summary. Bank accounts, credits, properties, and assets should be added if you have them. It's okay to have zero assets or debts, but the main form must be complete.
+</Note>
+
+---
+
+## What Happens Next
+
+After completing Economic Data:
+
+1. Your evaluation progress increases to approximately 83.33% (5 of 6 sections)
+2. Return to your evaluation dashboard
+3. Economic Data shows as complete ✓
+4. Proceed to the final data section: References
+
+<Card title="Next: References" icon="address-book" href="/guides/references">
+  Complete the final data section by adding your references
+</Card>
+
+---
+
+## Troubleshooting
+
+### Totals don't add up
+
+**Problem:** Income or expense totals seem wrong.
+
+**Solution:** Double-check your math. Some forms auto-calculate, others require manual entry of totals.
+
+### Can't add bank accounts
+
+**Problem:** Bank account section not saving.
+
+**Solution:** Make sure you saved the main financial summary first. Sub-sections require the main form to be completed.
+
+### Financial deficit flagged
+
+**Problem:** Expenses are higher than income.
+
+**Solution:** This is common. Explain in "Problemática Económica" how you manage (savings, family help, etc.).
+
+### Don't own anything
+
+**Problem:** No properties or vehicles to list.
+
+**Solution:** That's fine. Not everyone owns property or vehicles. Just complete the main financial form and leave those sub-sections empty.

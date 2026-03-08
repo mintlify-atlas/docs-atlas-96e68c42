@@ -1,0 +1,336 @@
+---
+title: 'File Upload'
+description: 'Upload and manage evaluation documents'
+---
+
+## Upload File
+
+<RequestExample>
+```bash POST /FileUpload/UploadFile
+curl -X POST https://api.vlife-dgo.com/FileUpload/UploadFile \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@document.pdf" \
+  -F "evalID=12345" \
+  -F "documentoID=8" \
+  -F "enctyptedData=abc123xyz"
+```
+</RequestExample>
+
+Uploads a document file associated with an employee evaluation.
+
+### Endpoint
+
+```
+POST /FileUpload/UploadFile
+```
+
+### Authentication
+
+Requires active user session (isLoggedIn middleware).
+
+### Request Body
+
+<ParamField body="file" type="file" required>
+  The PDF file to upload. Must be in PDF format.
+</ParamField>
+
+<ParamField body="evalID" type="integer" required>
+  The evaluation ID to associate the document with.
+</ParamField>
+
+<ParamField body="documentoID" type="integer" required>
+  The document type ID from the catalog (cat_dgo_documentos).
+</ParamField>
+
+<ParamField body="enctyptedData" type="string" required>
+  Encrypted evaluation data for redirect purposes.
+</ParamField>
+
+### File Upload Configuration
+
+- **Content Type**: `multipart/form-data`
+- **Max File Size**: 20 MB (20,000,000 bytes)
+- **Accepted Formats**: PDF only
+- **Storage Location**: `src/public/uploads/`
+- **Naming Strategy**: UUID v4 + day + month + `.pdf`
+  - Example: `550e8400-e29b-41d4-a716-446655440000823.pdf`
+
+### Response
+
+<ResponseField name="redirect" type="string">
+  Redirects to `/evaluacionvLife/evaluacionView/{enctyptedData}` on success.
+</ResponseField>
+
+<ResponseField name="flash.success" type="string">
+  "Documento cargado con exito" - Displayed on successful upload.
+</ResponseField>
+
+### Error Responses
+
+<ResponseField name="flash.message" type="string">
+  Error message displayed to the user.
+</ResponseField>
+
+**File Size Error**
+```json
+{
+  "flash": {
+    "message": "El archivo excede los 20MB"
+  }
+}
+```
+Returns when file exceeds the 20MB limit and redirects back to the previous page.
+
+**General Error**
+```json
+{
+  "flash": {
+    "message": "Algo salio mal !"
+  }
+}
+```
+Returns on database errors or other unexpected issues.
+
+### Implementation Details
+
+**Multer Configuration** (app.js:64-85)
+
+```javascript
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, 'public/uploads'),
+  filename: (req, file, cb) => {
+    const fecha = new Date()
+    const mes = fecha.getMonth() + 1
+    const dia = fecha.getDay()
+    cb(null, uuidv4() + dia + mes + '.pdf')
+  }
+})
+
+app.use(multer({
+  storage: storage,
+  limits: { fileSize: 20000000 },
+}).single('file'), fileSizeLimitErrorHandler)
+```
+
+**Database Operation** (FileUploadController.js:43-56)
+
+The uploaded file metadata is saved to `tbl_dgo_uploads` table:
+
+```sql
+INSERT INTO tbl_dgo_uploads SET ?
+```
+
+Data packet includes:
+- `evalID`: Evaluation identifier
+- `documentoID`: Document type identifier
+- `uploadFileName`: Generated UUID filename
+
+---
+
+## Delete File
+
+<RequestExample>
+```bash POST /FileUpload/DeleteFile
+curl -X POST https://api.vlife-dgo.com/FileUpload/DeleteFile \
+  -H "Content-Type: application/json" \
+  -d '{
+    "uploadID": 456
+  }'
+```
+</RequestExample>
+
+Soft deletes a previously uploaded document by setting its active flag to 0.
+
+### Endpoint
+
+```
+POST /FileUpload/DeleteFile
+```
+
+### Authentication
+
+Requires active user session (isLoggedIn middleware).
+
+### Request Body
+
+<ParamField body="uploadID" type="integer" required>
+  The unique identifier of the upload record to delete.
+</ParamField>
+
+### Response
+
+<ResponseField name="flash.success" type="string">
+  "Documento borrado con exito" - Displayed on successful deletion.
+</ResponseField>
+
+<ResponseField name="redirect" type="string">
+  Redirects back to the previous page.
+</ResponseField>
+
+### Error Response
+
+```json
+{
+  "flash": {
+    "message": "Algo salio mal !"
+  }
+}
+```
+
+### Database Operation
+
+```sql
+UPDATE tbl_dgo_uploads SET uploadActivo = 0
+WHERE uploadID = ?
+```
+
+This performs a soft delete by setting the `uploadActivo` flag to 0 rather than removing the record.
+
+---
+
+## Get File Upload View
+
+<RequestExample>
+```bash GET /FileUpload/FileUploadView/:documentoID/:enctyptedData
+curl -X GET https://api.vlife-dgo.com/FileUpload/FileUploadView/8/abc123xyz
+```
+</RequestExample>
+
+Returns the file upload interface view for a specific document type.
+
+### Endpoint
+
+```
+GET /FileUpload/FileUploadView/:documentoID/:enctyptedData
+```
+
+### Authentication
+
+Requires active user session (isLoggedIn middleware).
+
+### Path Parameters
+
+<ParamField path="documentoID" type="integer" required>
+  The document type ID to retrieve information for.
+</ParamField>
+
+<ParamField path="enctyptedData" type="string" required>
+  Encrypted evaluation data (ncrypt-js encrypted string).
+</ParamField>
+
+### Response
+
+Returns an HTML view (`fileUpload/fileUploadView`) with:
+
+<ResponseField name="user" type="string">
+  Current user's name from session.
+</ResponseField>
+
+<ResponseField name="enctyptedData" type="string">
+  The encrypted data passed in the URL.
+</ResponseField>
+
+<ResponseField name="decryptedData" type="string">
+  Decrypted evaluation ID.
+</ResponseField>
+
+<ResponseField name="documentoID" type="integer">
+  The document type identifier.
+</ResponseField>
+
+<ResponseField name="InfoDocument" type="object">
+  Document type information from `cat_dgo_documentos` catalog.
+</ResponseField>
+
+<ResponseField name="numLeyenda" type="integer" optional>
+  Legend number (only included when documentoID = 8).
+</ResponseField>
+
+### Database Query
+
+```sql
+SELECT * 
+FROM cat_dgo_documentos
+WHERE documentoID = ?
+```
+
+---
+
+## Income Reason Management
+
+### Add Income Reason
+
+<RequestExample>
+```bash POST /FileUpload/IngresosMotivo
+curl -X POST https://api.vlife-dgo.com/FileUpload/IngresosMotivo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "evalID": 12345,
+    "motivoDescripcion": "Salario adicional por horas extra",
+    "enctyptedData": "abc123xyz"
+  }'
+```
+</RequestExample>
+
+### Endpoint
+
+```
+POST /FileUpload/IngresosMotivo
+```
+
+### Request Body
+
+<ParamField body="evalID" type="integer" required>
+  The evaluation ID.
+</ParamField>
+
+<ParamField body="motivoDescripcion" type="string" required>
+  Description of the income reason.
+</ParamField>
+
+<ParamField body="enctyptedData" type="string" required>
+  Encrypted evaluation data for redirect.
+</ParamField>
+
+### Response
+
+<ResponseField name="flash.success" type="string">
+  "Se guardo motivo" - Displayed on success.
+</ResponseField>
+
+### Delete Income Reason
+
+<RequestExample>
+```bash POST /FileUpload/DeleteMotivo
+curl -X POST https://api.vlife-dgo.com/FileUpload/DeleteMotivo \
+  -H "Content-Type: application/json" \
+  -d '{
+    "evalID": 12345
+  }'
+```
+</RequestExample>
+
+### Endpoint
+
+```
+POST /FileUpload/DeleteMotivo
+```
+
+### Request Body
+
+<ParamField body="evalID" type="integer" required>
+  The evaluation ID to remove income reasons for.
+</ParamField>
+
+### Response
+
+<ResponseField name="flash.success" type="string">
+  "Motivo eliminado" - Displayed on successful deletion.
+</ResponseField>
+
+### Database Operation
+
+```sql
+UPDATE tbl_dgo_motivos_ingresos SET motivoActivo = 0 
+WHERE evalID = ?
+```
