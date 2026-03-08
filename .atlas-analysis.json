@@ -1,0 +1,133 @@
+{
+  "projectType": "saas",
+  "projectName": "vLife DGO",
+  "projectDescription": "Employee background evaluation and verification system for CEACC Durango",
+  "theme": "linden",
+  "primaryColor": "#003366",
+  "lightColor": "#4A90E2",
+  "darkColor": "#001F3F",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/authentication",
+              "features/evaluation-types",
+              "features/data-capture",
+              "features/document-upload",
+              "features/expediente-generation",
+              "features/certificate-validation"
+            ]
+          },
+          {
+            "group": "User Guides",
+            "pages": [
+              "guides/user-registration",
+              "guides/creating-evaluation",
+              "guides/personal-data",
+              "guides/family-data",
+              "guides/academic-data",
+              "guides/career-trajectory",
+              "guides/economic-data",
+              "guides/references",
+              "guides/document-requirements",
+              "guides/finalizing-evaluation"
+            ]
+          },
+          {
+            "group": "System Configuration",
+            "pages": [
+              "configuration/environment",
+              "configuration/database",
+              "configuration/session-management",
+              "configuration/file-uploads"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Authentication",
+            "pages": [
+              "api/auth/signin",
+              "api/auth/signup",
+              "api/auth/logout"
+            ]
+          },
+          {
+            "group": "Evaluations",
+            "pages": [
+              "api/evaluation/create",
+              "api/evaluation/view",
+              "api/evaluation/finalize"
+            ]
+          },
+          {
+            "group": "Data Capture",
+            "pages": [
+              "api/capture/personal",
+              "api/capture/family",
+              "api/capture/academic",
+              "api/capture/career",
+              "api/capture/economic",
+              "api/capture/references"
+            ]
+          },
+          {
+            "group": "Documents",
+            "pages": [
+              "api/documents/upload",
+              "api/documents/validation"
+            ]
+          },
+          {
+            "group": "Reports",
+            "pages": [
+              "api/reports/expediente",
+              "api/reports/certificate"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "User authentication and session management",
+    "Two evaluation types: Permanencia and Nuevo Ingreso",
+    "Multi-step data capture forms (personal, family, academic, career, economic, references)",
+    "Document upload and validation with file size limits",
+    "PDF generation for expedientes (dossiers)",
+    "Certificate generation and validation",
+    "Progress tracking for evaluation completion",
+    "Encrypted evaluation IDs for security"
+  ],
+  "publicApiSurface": [
+    "POST /auth/signin - User authentication",
+    "POST /auth/signup - User registration",
+    "POST /evaluacionvLife/validityEvaluation - Create or resume evaluation",
+    "GET /evaluacionvLife/evaluacionView/:encryptedData - View evaluation details",
+    "POST /capturePersonales/* - Capture personal data",
+    "POST /captureFamiliares/* - Capture family data",
+    "POST /captureAcademicos/* - Capture academic data",
+    "POST /captureTrayectoria/* - Capture career trajectory",
+    "POST /captureEconomicos/* - Capture economic data",
+    "POST /captureReferencias/* - Capture references",
+    "POST /FileUpload/* - Upload documents",
+    "GET /Expediente/ExpedienteViewPdf/:evalID - Generate PDF report",
+    "POST /Constancia/* - Generate certificate",
+    "POST /Validator/* - Validate certificate"
+  ]
+}
